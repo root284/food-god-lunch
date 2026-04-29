@@ -98,18 +98,6 @@
       box-shadow: 0 12px 28px rgba(229, 180, 93, 0.24);
     }
 
-    .settings-open {
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      background: rgba(255, 247, 232, 0.1);
-      color: #fff7e8;
-      border: 1px solid var(--line);
-      display: grid;
-      place-items: center;
-      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
-    }
-
     .hero {
       min-height: calc(100vh - 116px);
       display: grid;
@@ -204,6 +192,15 @@
     .fortune-stage {
       display: grid;
       gap: 14px;
+    }
+
+    .screen {
+      display: grid;
+      gap: 14px;
+    }
+
+    .screen[hidden] {
+      display: none;
     }
 
     .picker-copy {
@@ -361,7 +358,7 @@
 
     .offering textarea {
       width: 100%;
-      min-height: 92px;
+      min-height: 74px;
       padding: 12px;
       border-radius: var(--radius);
       border: 1px solid var(--line);
@@ -398,20 +395,7 @@
       flex: 0 0 max-content;
       gap: 7px;
       min-width: max-content;
-      animation: offeringLoop 34s linear infinite;
-      will-change: transform;
       pointer-events: auto;
-    }
-
-    .quick-offerings:hover .quick-offerings-track,
-    .quick-offerings:focus-within .quick-offerings-track,
-    .quick-offerings.dragging .quick-offerings-track {
-      animation-play-state: paused;
-    }
-
-    @keyframes offeringLoop {
-      from { transform: translateX(0); }
-      to { transform: translateX(calc(-50% - 3.5px)); }
     }
 
     .quick-offering {
@@ -849,9 +833,6 @@
         <span class="brand-mark">食</span>
         <span>음식의 신</span>
       </div>
-      <button class="settings-open" id="openSettings" type="button" aria-label="AI 설정 열기" title="AI 설정">
-        ⚙
-      </button>
     </header>
 
     <main class="hero">
@@ -865,19 +846,23 @@
         <div class="panel-body">
           <section id="fortuneMode">
             <div class="fortune-stage" id="fortuneStage">
-              <div class="picker-copy">
-                <b>마음에 드는 신을 넘겨 골라보세요</b>
-                <span>화나는 날, 피곤한 날, 금전운이 필요한 날, 횡재수가 왔으면 하는 날까지. 선택한 신이 오늘의 점심 메뉴를 대신 정해줍니다.</span>
+              <div class="screen" id="inputScreen">
+                <div class="picker-copy">
+                  <b>마음에 드는 신을 넘겨 골라보세요</b>
+                  <span>화나는 날, 피곤한 날, 금전운이 필요한 날, 횡재수가 왔으면 하는 날까지. 선택한 신이 오늘의 점심 메뉴를 대신 정해줍니다.</span>
+                </div>
+                <div class="god-carousel" id="godCarousel" aria-label="오늘의 음식신 선택"></div>
+                <div class="offering">
+                  <label for="concernInput">고민 있으면 털어놔봐 <span style="color:var(--muted);font-weight:800;">선택사항</span></label>
+                  <textarea id="concernInput" placeholder="예: 다이어트는 하고 싶은데 맛있는 건 먹고 싶어요. 상사가 개짜증나요. 시험 망했어요. 회식장소 구해요."></textarea>
+                  <div class="quick-offerings" id="quickOfferings"></div>
+                </div>
+                <button class="primary" type="button" id="askFortune">오늘 점심 골라줘</button>
               </div>
-              <div class="god-carousel" id="godCarousel" aria-label="오늘의 음식신 선택"></div>
-              <div class="offering">
-                <label for="concernInput">고민 있으면 털어놔봐 <span style="color:var(--muted);font-weight:800;">선택사항</span></label>
-                <textarea id="concernInput" placeholder="예: 다이어트는 하고 싶은데 맛있는 건 먹고 싶어요. 상사가 개짜증나요. 시험 망했어요. 회식장소 구해요."></textarea>
-                <div class="quick-offerings" id="quickOfferings"></div>
+              <div class="screen" id="resultScreen" hidden>
+                <div class="result" id="fortuneResult"></div>
+                <div class="restaurant-panel" id="fortuneRestaurant"></div>
               </div>
-              <button class="primary" type="button" id="askFortune">오늘 점심 골라줘</button>
-              <div class="result" id="fortuneResult"></div>
-              <div class="restaurant-panel" id="fortuneRestaurant"></div>
             </div>
           </section>
         </div>
@@ -885,23 +870,6 @@
     </main>
 
   </div>
-
-  <dialog id="settingsDialog">
-    <form class="settings" method="dialog">
-      <h2>추천 설정</h2>
-      <p>배포 버전에서는 API 키를 서버 환경변수로 숨기고, 브라우저는 `/api/fortune`만 호출합니다.</p>
-      <div class="field">
-        <label for="userMood">오늘의 기분 힌트</label>
-        <textarea id="userMood" placeholder="예: 월말이라 지쳤고, 너무 무겁지 않은 메뉴가 좋아요."></textarea>
-      </div>
-      <div class="settings-actions">
-        <button class="secondary" value="save" id="saveSettings">저장</button>
-        <button class="ghost" value="cancel">닫기</button>
-      </div>
-      <div class="status" id="settingsStatus"></div>
-    </form>
-  </dialog>
-
   <script>
     const $ = (selector, root = document) => root.querySelector(selector);
     const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
@@ -1129,10 +1097,6 @@
     let selectedMenu = "";
     let selectedGodId = "money";
 
-    const settings = {
-      mood: localStorage.getItem("foodGod.mood") || ""
-    };
-
     function sample(items) {
       return items[Math.floor(Math.random() * items.length)];
     }
@@ -1220,7 +1184,7 @@
 
     async function aiFortune() {
       const god = currentGod();
-      const concern = $("#concernInput")?.value.trim() || settings.mood || "특별한 고민 없음";
+      const concern = $("#concernInput")?.value.trim() || "특별한 고민 없음";
       const response = await fetch("/api/fortune", {
         method: "POST",
         headers: {
@@ -1262,11 +1226,11 @@
           </div>
         </article>
         <div class="actions">
-          <button class="ghost" type="button" id="againFortune">다시 보기</button>
+          <button class="ghost" type="button" id="backToInput">다시 고르기</button>
           <button class="secondary" type="button" id="findFortuneRestaurant">지도에서 식당 보기</button>
         </div>
       `;
-      $("#againFortune").addEventListener("click", askFortune);
+      $("#backToInput").addEventListener("click", showInputScreen);
       $("#findFortuneRestaurant").addEventListener("click", () => showRestaurantPicker($("#fortuneRestaurant"), selectedMenu));
     }
 
@@ -1274,7 +1238,16 @@
       const button = $("#askFortune");
       button.disabled = true;
       button.textContent = `${currentGod().name}이 메뉴를 고르는 중...`;
+      $("#inputScreen").hidden = true;
+      $("#resultScreen").hidden = false;
       $("#fortuneResult").innerHTML = "";
+      $("#fortuneResult").innerHTML = `
+        <article class="result-card">
+          <div class="result-kicker"><span>${currentGod().emoji} ${currentGod().name}</span><span>조리 중</span></div>
+          <h2 class="menu-name">점심 운세 확인 중...</h2>
+          <p class="fortune-text">오늘의 기운과 메뉴 후보를 섞는 중입니다. 잠시만 기다려주세요.</p>
+        </article>
+      `;
       $("#fortuneRestaurant").classList.remove("active");
       $("#fortuneStage").classList.add("is-cooking");
 
@@ -1294,6 +1267,13 @@
         button.disabled = false;
         button.textContent = "오늘 점심 골라줘";
       }
+    }
+
+    function showInputScreen() {
+      $("#resultScreen").hidden = true;
+      $("#inputScreen").hidden = false;
+      $("#fortuneResult").innerHTML = "";
+      $("#fortuneRestaurant").classList.remove("active");
     }
 
     function showRestaurantPicker(root, menu) {
@@ -1349,6 +1329,7 @@
       selectedGodId = gods[nextIndex].id;
       $("#fortuneResult").innerHTML = "";
       $("#fortuneRestaurant").classList.remove("active");
+      showInputScreen();
       renderGods();
     }
 
@@ -1366,10 +1347,9 @@
         "그냥 아무거나 정해주세요"
       ];
 
-      const loopItems = [...examples, ...examples];
       $("#quickOfferings").innerHTML = `
         <div class="quick-offerings-track">
-          ${loopItems.map(text => `
+          ${examples.map(text => `
             <button class="quick-offering" type="button">${escapeHtml(text)}</button>
           `).join("")}
         </div>
@@ -1438,21 +1418,6 @@
       }[char]));
     }
 
-    function bindSettings() {
-      const dialog = $("#settingsDialog");
-      $("#userMood").value = settings.mood;
-
-      $("#openSettings").addEventListener("click", () => dialog.showModal());
-      $("#saveSettings").addEventListener("click", event => {
-        event.preventDefault();
-        settings.mood = $("#userMood").value.trim();
-        localStorage.setItem("foodGod.mood", settings.mood);
-        $("#settingsStatus").textContent = "저장되었습니다.";
-        setTimeout(() => dialog.close(), 420);
-      });
-    }
-
-    bindSettings();
     renderGods();
     renderQuickOfferings();
     $("#askFortune").addEventListener("click", askFortune);
