@@ -1,0 +1,1461 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>음식의 신 | 오늘의 운세 점심 추천</title>
+  <meta name="description" content="오늘의 운세와 기분을 섞어 점심 메뉴를 추천하는 웹앱" />
+  <style>
+    :root {
+      color-scheme: dark;
+      --ink: #fff7e8;
+      --muted: #b9a99a;
+      --paper: #16120f;
+      --line: rgba(255, 247, 232, 0.16);
+      --panel: rgba(24, 19, 17, 0.78);
+      --panel-strong: rgba(255, 247, 232, 0.93);
+      --red: #e05235;
+      --green: #20a486;
+      --gold: #e5b45d;
+      --blue: #5b84d7;
+      --shadow: 0 28px 90px rgba(0, 0, 0, 0.46);
+      --radius: 8px;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 20% 10%, rgba(229, 180, 93, 0.18), transparent 28%),
+        radial-gradient(circle at 78% 24%, rgba(32, 164, 134, 0.2), transparent 30%),
+        linear-gradient(145deg, rgba(132, 32, 22, 0.22), rgba(8, 39, 37, 0.2) 42%, rgba(9, 8, 10, 0) 72%),
+        linear-gradient(180deg, rgba(9, 8, 10, 0.3), rgba(9, 8, 10, 0.72)),
+        url("assets/mystic-oracle-bg.png") center top / cover fixed no-repeat,
+        linear-gradient(180deg, #17100f 0%, #0d1215 48%, #16100e 100%);
+      min-height: 100vh;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 50% 18%, rgba(255, 247, 232, 0.1), transparent 26%),
+        repeating-linear-gradient(115deg, rgba(255, 247, 232, 0.025) 0 1px, transparent 1px 78px);
+      mix-blend-mode: screen;
+      opacity: 0.78;
+    }
+
+    button, input, select, textarea {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.45;
+    }
+
+    .shell {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 24px 0 40px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      min-height: 52px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 900;
+      letter-spacing: 0;
+      color: #fff7e8;
+    }
+
+    .brand-mark {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #fff0be, #d38b35 52%, #4b2517);
+      color: #19110f;
+      box-shadow: 0 12px 28px rgba(229, 180, 93, 0.24);
+    }
+
+    .settings-open {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(255, 247, 232, 0.1);
+      color: #fff7e8;
+      border: 1px solid var(--line);
+      display: grid;
+      place-items: center;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
+    }
+
+    .hero {
+      min-height: calc(100vh - 116px);
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(340px, 420px);
+      gap: 48px;
+      align-items: end;
+      padding: 42px 0 22px;
+    }
+
+    .copy {
+      max-width: 690px;
+      padding-bottom: 42px;
+      text-shadow: 0 2px 26px rgba(0, 0, 0, 0.62);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 11px;
+      background: rgba(255, 247, 232, 0.1);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: #f2d49a;
+      font-size: 14px;
+      font-weight: 800;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      font-size: clamp(46px, 7.2vw, 88px);
+      line-height: 0.96;
+      margin: 0;
+      letter-spacing: 0;
+    }
+
+    .lead {
+      margin: 20px 0 0;
+      font-size: clamp(17px, 2.2vw, 22px);
+      line-height: 1.58;
+      max-width: 610px;
+      color: #dfd1bf;
+      font-weight: 650;
+    }
+
+    .app-panel {
+      position: relative;
+      background: var(--panel);
+      border: 1px solid rgba(255, 247, 232, 0.2);
+      border-radius: 30px;
+      box-shadow:
+        0 0 0 8px rgba(255, 247, 232, 0.045),
+        0 0 0 1px rgba(255, 247, 232, 0.12),
+        var(--shadow);
+      backdrop-filter: blur(22px);
+      overflow: hidden;
+      max-height: calc(100vh - 106px);
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(229, 180, 93, 0.45) transparent;
+    }
+
+    .app-panel::before {
+      content: "";
+      display: block;
+      height: 34px;
+      background:
+        radial-gradient(circle at 22px 17px, rgba(255, 247, 232, 0.5) 0 3px, transparent 4px),
+        radial-gradient(circle at 38px 17px, rgba(255, 247, 232, 0.32) 0 3px, transparent 4px),
+        radial-gradient(circle at 54px 17px, rgba(255, 247, 232, 0.22) 0 3px, transparent 4px),
+        linear-gradient(180deg, rgba(255, 247, 232, 0.08), rgba(255, 247, 232, 0.025));
+      border-bottom: 1px solid rgba(255, 247, 232, 0.1);
+    }
+
+    .app-panel::after {
+      content: "";
+      position: absolute;
+      top: 13px;
+      left: 50%;
+      width: 78px;
+      height: 7px;
+      transform: translateX(-50%);
+      border-radius: 999px;
+      background: rgba(10, 8, 9, 0.62);
+      box-shadow: inset 0 1px 2px rgba(255, 247, 232, 0.08);
+    }
+
+    .panel-body {
+      padding: 14px 16px 18px;
+    }
+
+    .fortune-stage {
+      display: grid;
+      gap: 14px;
+    }
+
+    .picker-copy {
+      background: rgba(255, 247, 232, 0.08);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 13px;
+      line-height: 1.48;
+    }
+
+    .picker-copy b {
+      display: block;
+      font-size: 18px;
+      margin-bottom: 4px;
+      letter-spacing: 0;
+    }
+
+    .picker-copy span {
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 750;
+    }
+
+    .god-carousel {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #09080a;
+      position: relative;
+      overflow: hidden;
+      min-height: 374px;
+      touch-action: pan-y;
+    }
+
+    .god-track {
+      display: flex;
+      height: 100%;
+      transition: transform 0.32s cubic-bezier(.2,.8,.2,1);
+      will-change: transform;
+    }
+
+    .god-slide {
+      min-width: 100%;
+      min-height: 374px;
+      position: relative;
+      display: grid;
+      align-items: end;
+      background: #09080a;
+    }
+
+    .god-slide img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center 12%;
+    }
+
+    .god-slide::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(32,25,22,0.04), rgba(32,25,22,0.1) 48%, rgba(32,25,22,0.84));
+    }
+
+    .god-caption {
+      position: relative;
+      z-index: 1;
+      padding: 18px;
+      color: #fffaf2;
+      text-shadow: 0 2px 18px rgba(0, 0, 0, 0.44);
+    }
+
+    .god-caption b {
+      display: block;
+      font-size: 30px;
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+
+    .god-caption span {
+      display: block;
+      margin-top: 6px;
+      color: rgba(255, 250, 242, 0.78);
+      font-weight: 850;
+    }
+
+    .carousel-button {
+      position: absolute;
+      top: 50%;
+      z-index: 2;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      transform: translateY(-50%);
+      background: rgba(255, 250, 242, 0.86);
+      color: #201916;
+      border: 1px solid rgba(255, 250, 242, 0.7);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
+      font-weight: 950;
+    }
+
+    .carousel-button.prev {
+      position: absolute;
+      left: 12px;
+    }
+
+    .carousel-button.next {
+      right: 12px;
+    }
+
+    .god-dots {
+      position: absolute;
+      z-index: 2;
+      left: 0;
+      right: 0;
+      bottom: 10px;
+      display: flex;
+      justify-content: center;
+      gap: 7px;
+      pointer-events: none;
+    }
+
+    .god-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: rgba(255, 250, 242, 0.42);
+    }
+
+    .god-dot.active {
+      width: 22px;
+      border-radius: 999px;
+      background: #fffaf2;
+    }
+
+    .fortune-stage.is-cooking .god-carousel {
+      animation: divineSteam 0.72s ease-in-out infinite alternate;
+    }
+
+    @keyframes divineSteam {
+      to { filter: saturate(1.18) contrast(1.06); transform: translateY(-1px); }
+    }
+
+    .offering {
+      display: grid;
+      gap: 8px;
+    }
+
+    .offering label {
+      color: #f2d49a;
+      font-size: 13px;
+      font-weight: 950;
+    }
+
+    .offering textarea {
+      width: 100%;
+      min-height: 92px;
+      padding: 12px;
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      background: rgba(255, 247, 232, 0.1);
+      color: var(--ink);
+      resize: vertical;
+      outline: none;
+    }
+
+    .quick-offerings {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 7px;
+      overflow-x: auto;
+      padding: 2px 0 4px;
+      scrollbar-width: none;
+      mask-image: linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent);
+      scroll-behavior: smooth;
+      cursor: grab;
+      user-select: none;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .quick-offerings.dragging {
+      cursor: grabbing;
+    }
+
+    .quick-offerings::-webkit-scrollbar {
+      display: none;
+    }
+
+    .quick-offerings-track {
+      display: flex;
+      flex: 0 0 max-content;
+      gap: 7px;
+      min-width: max-content;
+      animation: offeringLoop 34s linear infinite;
+      will-change: transform;
+      pointer-events: auto;
+    }
+
+    .quick-offerings:hover .quick-offerings-track,
+    .quick-offerings:focus-within .quick-offerings-track,
+    .quick-offerings.dragging .quick-offerings-track {
+      animation-play-state: paused;
+    }
+
+    @keyframes offeringLoop {
+      from { transform: translateX(0); }
+      to { transform: translateX(calc(-50% - 3.5px)); }
+    }
+
+    .quick-offering {
+      flex: 0 0 auto;
+      min-height: 34px;
+      padding: 0 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255, 247, 232, 0.1);
+      color: #dfd1bf;
+      font-size: 12px;
+      font-weight: 850;
+    }
+
+    .orb-wrap {
+      height: 190px;
+      display: grid;
+      place-items: center;
+      background:
+        radial-gradient(circle at 50% 42%, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0) 37%),
+        linear-gradient(135deg, rgba(216, 71, 42, 0.13), rgba(15, 139, 111, 0.12), rgba(53, 107, 179, 0.12));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .orb {
+      width: 112px;
+      height: 112px;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 35% 24%, rgba(255,255,255,0.95), rgba(255,255,255,0.24) 18%, transparent 30%),
+        conic-gradient(from 30deg, #efc56f, #d8472a, #356bb3, #0f8b6f, #efc56f);
+      box-shadow:
+        inset 0 -18px 34px rgba(32, 25, 22, 0.22),
+        0 20px 40px rgba(32, 25, 22, 0.2);
+      position: relative;
+    }
+
+    .orb::after {
+      content: "";
+      position: absolute;
+      inset: 14px;
+      border-radius: inherit;
+      background: radial-gradient(circle, rgba(255,255,255,0.35), rgba(255,255,255,0.04));
+      border: 1px solid rgba(255,255,255,0.28);
+    }
+
+    .orb.spinning {
+      animation: spin 1.1s linear infinite, pulse 0.72s ease-in-out infinite alternate;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes pulse { to { scale: 1.06; filter: saturate(1.2); } }
+
+    .result {
+      display: grid;
+      gap: 12px;
+    }
+
+    .result-card {
+      background: rgba(255, 247, 232, 0.1);
+      border: 1px solid rgba(255, 247, 232, 0.18);
+      border-radius: var(--radius);
+      padding: 15px;
+      color: var(--ink);
+    }
+
+    .result-kicker {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 900;
+      margin-bottom: 8px;
+    }
+
+    .menu-name {
+      margin: 0;
+      font-size: 32px;
+      line-height: 1.1;
+      letter-spacing: 0;
+    }
+
+    .fortune-text {
+      margin: 10px 0 0;
+      color: #dfd1bf;
+      line-height: 1.6;
+      font-weight: 620;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .chip {
+      padding: 7px 9px;
+      border-radius: 999px;
+      background: rgba(229, 180, 93, 0.16);
+      color: #f2d49a;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .primary, .secondary, .ghost {
+      min-height: 48px;
+      border-radius: var(--radius);
+      font-weight: 900;
+    }
+
+    .primary {
+      background: linear-gradient(135deg, #f06b45, #c63829);
+      color: white;
+      box-shadow: 0 14px 30px rgba(224, 82, 53, 0.3);
+    }
+
+    .secondary {
+      background: linear-gradient(135deg, #e5b45d, #9b5e25);
+      color: #1b120e;
+    }
+
+    .ghost {
+      background: rgba(255, 247, 232, 0.1);
+      color: var(--ink);
+      border: 1px solid var(--line);
+    }
+
+    .step-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
+
+    .step-label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .step-title {
+      margin: 4px 0 0;
+      font-size: 22px;
+      letter-spacing: 0;
+    }
+
+    .grid {
+      display: grid;
+      gap: 9px;
+    }
+
+    .grid.intent {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .grid.category {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .choice {
+      min-height: 68px;
+      padding: 10px;
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.65);
+      color: var(--ink);
+      display: grid;
+      gap: 4px;
+      text-align: left;
+    }
+
+    .choice.active {
+      outline: 2px solid #201916;
+      background: #fffdf8;
+    }
+
+    .choice.disabled {
+      filter: grayscale(1);
+      opacity: 0.36;
+    }
+
+    .choice b {
+      font-size: 14px;
+      line-height: 1.25;
+    }
+
+    .choice small {
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    .roulette {
+      min-height: 156px;
+      border-radius: var(--radius);
+      border: 1px dashed rgba(32, 25, 22, 0.3);
+      background: rgba(255, 255, 255, 0.52);
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      text-align: center;
+      margin-top: 12px;
+    }
+
+    .roulette-word {
+      font-size: 28px;
+      font-weight: 950;
+      letter-spacing: 0;
+      line-height: 1.14;
+    }
+
+    .roulette-sub {
+      color: var(--muted);
+      margin-top: 8px;
+      font-weight: 750;
+    }
+
+    .restaurant-panel {
+      display: none;
+      margin-top: 12px;
+      border-top: 1px solid var(--line);
+      padding-top: 14px;
+    }
+
+    .restaurant-panel.active { display: block; }
+
+    .distance-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .distance {
+      min-height: 44px;
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.68);
+      border: 1px solid var(--line);
+      font-weight: 850;
+    }
+
+    dialog {
+      width: min(560px, calc(100% - 30px));
+      border: 0;
+      border-radius: var(--radius);
+      padding: 0;
+      box-shadow: var(--shadow);
+      background: #181311;
+      color: var(--ink);
+      border: 1px solid var(--line);
+    }
+
+    dialog::backdrop {
+      background: rgba(20, 13, 9, 0.45);
+      backdrop-filter: blur(8px);
+    }
+
+    .settings {
+      padding: 18px;
+    }
+
+    .settings h2 {
+      margin: 0 0 8px;
+      font-size: 24px;
+    }
+
+    .settings p {
+      margin: 0 0 16px;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+      margin-top: 12px;
+    }
+
+    .field label {
+      font-size: 13px;
+      font-weight: 900;
+      color: #f2d49a;
+    }
+
+    .field input, .field select, .field textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255, 247, 232, 0.1);
+      color: var(--ink);
+      min-height: 44px;
+      padding: 10px 11px;
+      outline: none;
+    }
+
+    .field textarea {
+      min-height: 88px;
+      resize: vertical;
+    }
+
+    .settings-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .status {
+      min-height: 22px;
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .footer {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 18px;
+      margin-top: 14px;
+      color: #c9b8a7;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .mini-note {
+      background: rgba(255, 247, 232, 0.08);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 12px;
+      backdrop-filter: blur(16px);
+    }
+
+    @media (max-width: 880px) {
+      body {
+        background-position: 58% top;
+        background-attachment: scroll;
+      }
+
+      .hero {
+        grid-template-columns: 1fr;
+        align-items: start;
+        min-height: auto;
+        padding-top: 28px;
+      }
+
+      .copy {
+        padding: 28px 0 10px;
+      }
+
+      .app-panel {
+        margin-bottom: 18px;
+        width: min(100%, 430px);
+        justify-self: center;
+      }
+
+      .footer {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 460px) {
+      .shell {
+        width: min(100% - 14px, 1180px);
+        padding-top: 10px;
+      }
+
+      .hero {
+        gap: 14px;
+        padding-top: 18px;
+      }
+
+      .copy {
+        padding: 10px 0 0;
+      }
+
+      h1 {
+        font-size: 42px;
+      }
+
+      .lead {
+        margin-top: 12px;
+        font-size: 16px;
+      }
+
+      .panel-body {
+        padding: 12px;
+      }
+
+      .app-panel {
+        border-radius: 22px;
+        max-height: none;
+      }
+
+      .grid.intent {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .choice {
+        min-height: 64px;
+      }
+
+      .god-carousel,
+      .god-slide {
+        min-height: 348px;
+      }
+
+      .menu-name {
+        font-size: 28px;
+      }
+
+      .actions, .distance-grid, .settings-actions {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand" aria-label="음식의 신">
+        <span class="brand-mark">食</span>
+        <span>음식의 신</span>
+      </div>
+      <button class="settings-open" id="openSettings" type="button" aria-label="AI 설정 열기" title="AI 설정">
+        ⚙
+      </button>
+    </header>
+
+    <main class="hero">
+      <section class="copy" aria-labelledby="appTitle">
+        <div class="eyebrow">🔮 행운을 부르는</div>
+        <h1 id="appTitle">운명의 점심메뉴</h1>
+        <p class="lead">이미지를 넘겨 지금 기분에 끌리는 신을 고르세요. 당신의 점심 고민을 쓸데없이 진지하게 해결해줍니다.</p>
+      </section>
+
+      <section class="app-panel" aria-label="점심 메뉴 추천 앱">
+        <div class="panel-body">
+          <section id="fortuneMode">
+            <div class="fortune-stage" id="fortuneStage">
+              <div class="picker-copy">
+                <b>마음에 드는 신을 넘겨 골라보세요</b>
+                <span>화나는 날, 피곤한 날, 금전운이 필요한 날, 횡재수가 왔으면 하는 날까지. 선택한 신이 오늘의 점심 메뉴를 대신 정해줍니다.</span>
+              </div>
+              <div class="god-carousel" id="godCarousel" aria-label="오늘의 음식신 선택"></div>
+              <div class="offering">
+                <label for="concernInput">고민 있으면 털어놔봐 <span style="color:var(--muted);font-weight:800;">선택사항</span></label>
+                <textarea id="concernInput" placeholder="예: 다이어트는 하고 싶은데 맛있는 건 먹고 싶어요. 상사가 개짜증나요. 시험 망했어요. 회식장소 구해요."></textarea>
+                <div class="quick-offerings" id="quickOfferings"></div>
+              </div>
+              <button class="primary" type="button" id="askFortune">오늘 점심 골라줘</button>
+              <div class="result" id="fortuneResult"></div>
+              <div class="restaurant-panel" id="fortuneRestaurant"></div>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+
+  </div>
+
+  <dialog id="settingsDialog">
+    <form class="settings" method="dialog">
+      <h2>추천 설정</h2>
+      <p>배포 버전에서는 API 키를 서버 환경변수로 숨기고, 브라우저는 `/api/fortune`만 호출합니다.</p>
+      <div class="field">
+        <label for="userMood">오늘의 기분 힌트</label>
+        <textarea id="userMood" placeholder="예: 월말이라 지쳤고, 너무 무겁지 않은 메뉴가 좋아요."></textarea>
+      </div>
+      <div class="settings-actions">
+        <button class="secondary" value="save" id="saveSettings">저장</button>
+        <button class="ghost" value="cancel">닫기</button>
+      </div>
+      <div class="status" id="settingsStatus"></div>
+    </form>
+  </dialog>
+
+  <script>
+    const $ = (selector, root = document) => root.querySelector(selector);
+    const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
+
+    const intents = [
+      { id: "stress", icon: "😤", name: "스트레스 해소", hint: "맵고 진한 위로" },
+      { id: "novel", icon: "✨", name: "이색적인 식사", hint: "평소와 다른 맛" },
+      { id: "light", icon: "🥗", name: "다이어트", hint: "가볍고 산뜻하게" },
+      { id: "hangover", icon: "🍲", name: "해장", hint: "속을 풀어주는 국물" },
+      { id: "sweet", icon: "🍰", name: "당 충전", hint: "기분 회복용" },
+      { id: "power", icon: "💪", name: "보양식", hint: "오후 체력 보급" },
+      { id: "quick", icon: "⚡", name: "간단한 거", hint: "빠르고 든든하게" },
+      { id: "date", icon: "💕", name: "데이트", hint: "대화하기 좋은 메뉴" },
+      { id: "group", icon: "🍻", name: "회식/모임", hint: "나눠 먹기 좋게" }
+    ];
+
+    const categories = [
+      { id: "korean", icon: "🇰🇷", name: "한식" },
+      { id: "italian", icon: "🍝", name: "이탈리안" },
+      { id: "chinese", icon: "🥟", name: "중식" },
+      { id: "japanese", icon: "🍣", name: "일식" },
+      { id: "snack", icon: "🍢", name: "분식" },
+      { id: "global", icon: "🌍", name: "기타" }
+    ];
+
+    const gods = [
+      {
+        id: "money",
+        emoji: "💰",
+        name: "돈의 신",
+        title: "월급의 수호자",
+        mood: "금전운 올리고 싶은 날",
+        image: "assets/gods/money.png",
+        intents: ["quick", "power", "korean"],
+        luckyColors: ["황금빛", "에메랄드 초록", "지갑 검정"],
+        sides: ["계란 추가", "김가루", "따뜻한 차", "아껴둔 쿠폰"],
+        voices: [
+          "오늘의 지갑은 존중받고 싶어 한다. 과소비는 막고 만족감은 챙기는 메뉴가 금전운의 그릇이다.",
+          "큰돈은 몰라도 작은 행운은 점심값에서 시작된다. 든든하고 후회 없는 한 끼로 지출의 기운을 다스려라."
+        ]
+      },
+      {
+        id: "rage",
+        emoji: "🔥",
+        name: "짜증의 신",
+        title: "분노의 프라이팬",
+        mood: "화나는 날",
+        image: "assets/gods/rage.png",
+        intents: ["stress", "hangover", "quick"],
+        luckyColors: ["고추장 빨강", "불판 주황", "탄 냄비 검정"],
+        sides: ["단무지", "아이스 아메리카노", "바삭한 튀김", "차가운 물"],
+        voices: [
+          "오늘의 분노는 그냥 삼키면 위장에 남는다. 맵고 선명한 한 끼로 마음의 후라이팬을 한번 털어내라.",
+          "네 안의 작은 불길이 회의실 커튼까지 태우기 전에 점심으로 방향을 돌려라. 씹는 맛이 있는 메뉴가 오늘의 방화벽이다."
+        ]
+      },
+      {
+        id: "joy",
+        emoji: "✨",
+        name: "행복의 신",
+        title: "햇살 과다 복용자",
+        mood: "에너지 샘솟는 날",
+        image: "assets/gods/joy.png",
+        intents: ["novel", "sweet", "date"],
+        luckyColors: ["망고 노랑", "소다 하늘색", "피클 초록"],
+        sides: ["탄산수", "디저트 한 입", "상큼한 샐러드", "치즈 추가"],
+        voices: [
+          "오늘 너의 기운은 과하게 반짝인다. 평범한 메뉴에 갇히면 우주가 약간 서운해한다.",
+          "좋은 날에는 좋은 핑계가 필요하다. 보기에도 즐겁고 먹고 나서도 기분이 남는 메뉴를 택하라."
+        ]
+      },
+      {
+        id: "tired",
+        emoji: "😴",
+        name: "피곤의 신",
+        title: "탄수화물의 현자",
+        mood: "피곤한 날",
+        image: "assets/gods/tired.png",
+        intents: ["hangover", "power", "quick"],
+        luckyColors: ["국밥 베이지", "커피 갈색", "새벽 회색"],
+        sides: ["깍두기", "따뜻한 국물", "아이스 라떼", "계란 추가"],
+        voices: [
+          "오늘의 영혼은 절전 모드다. 씹는 의지까지 아껴줄 든든한 메뉴로 시스템을 재부팅하라.",
+          "기운이 바닥을 봤다면 철학보다 탄수화물이 먼저다. 따뜻하고 빠른 한 그릇이 너를 다시 인간으로 만든다."
+        ]
+      },
+      {
+        id: "plain",
+        emoji: "🍚",
+        name: "그냥 신",
+        title: "무표정한 점심 관리자",
+        mood: "평범한 날",
+        image: "assets/gods/plain.png",
+        intents: ["quick", "korean", "light"],
+        luckyColors: ["쌀밥 흰색", "김가루 검정", "간장 갈색"],
+        sides: ["김치", "물", "계란프라이", "김"],
+        voices: [
+          "오늘은 우주도 별말이 없다. 그러니 검증된 메뉴를 먹고 남은 판단력은 오후에 써라.",
+          "드라마틱한 계시는 없다. 배고프면 먹고, 맛있으면 이긴 것이다."
+        ]
+      },
+      {
+        id: "sad",
+        emoji: "🌧️",
+        name: "슬픔의 신",
+        title: "국물의 봉합자",
+        mood: "슬픈 날",
+        image: "assets/gods/sad.png",
+        intents: ["hangover", "light", "korean"],
+        luckyColors: ["비 오는 파랑", "두부 흰색", "파 송송 초록"],
+        sides: ["따뜻한 차", "반숙란", "겉절이", "작은 만두"],
+        voices: [
+          "마음이 젖은 날에는 바삭한 척하지 않아도 된다. 따뜻한 국물 하나면 오후까지는 버틸 수 있다.",
+          "오늘의 슬픔은 거창한 해결보다 조용한 숟가락을 원한다. 속을 다독이는 메뉴를 가까이하라."
+        ]
+      },
+      {
+        id: "luck",
+        emoji: "🍀",
+        name: "행운의 여신",
+        title: "클로버 런치 메이커",
+        mood: "운이 좀 따라줬으면 하는 날",
+        image: "assets/gods/luck.png",
+        intents: ["novel", "date", "sweet"],
+        luckyColors: ["클로버 초록", "샴페인 골드", "우유빛 흰색"],
+        sides: ["탄산수", "디저트 한 입", "상큼한 피클", "소스 추가"],
+        voices: [
+          "오늘은 우연을 가장한 맛있는 사건이 필요하다. 평소보다 살짝 반짝이는 메뉴가 행운을 데려온다.",
+          "작은 선택 하나가 하루의 분위기를 뒤집는다. 먹는 순간 기분이 올라가는 메뉴를 골라라."
+        ]
+      }
+    ];
+
+    const menus = {
+      stress: {
+        korean: ["제육볶음", "김치찌개", "매운 갈비찜", "낙지볶음", "닭볶음탕", "묵은지찜"],
+        italian: ["아라비아따 파스타", "매콤 로제 파스타", "디아볼라 피자", "해산물 토마토 파스타"],
+        chinese: ["마라탕", "마파두부 덮밥", "고추잡채밥", "사천 탕수육", "짬뽕"],
+        japanese: ["매운 돈코츠 라멘", "규동", "카레 우동", "가츠동"],
+        snack: ["국물 떡볶이", "라볶이", "쫄면", "매운 김밥"],
+        global: ["타코 라이스", "버팔로 치킨랩", "팟타이", "쌀국수 매운맛"]
+      },
+      novel: {
+        korean: ["들기름 막국수", "보리굴비 정식", "육회비빔밥", "꼬막비빔밥"],
+        italian: ["뇨끼", "라자냐", "트러플 크림 리조또", "봉골레 파스타"],
+        chinese: ["우육면", "딤섬 세트", "탄탄면", "가지덮밥"],
+        japanese: ["마제소바", "오차즈케", "사케동", "야키소바"],
+        snack: ["바질 떡볶이", "마라 김밥", "튀김 오마카세", "토스트 플래터"],
+        global: ["반미", "샥슈카", "케밥 플레이트", "포케", "부리또 볼"]
+      },
+      light: {
+        korean: ["비빔밥", "두부김치 정식", "메밀국수", "시래기밥", "닭가슴살 비빔밥"],
+        italian: ["카프레제 샐러드", "알리오 올리오", "미네스트로네", "샐러드 파스타"],
+        chinese: ["토마토 계란덮밥", "청경채 볶음밥", "마라샹궈 야채 위주", "완탕면"],
+        japanese: ["소바", "연어 샐러드동", "냉우동", "두부 스테이크 정식"],
+        snack: ["키토 김밥", "유부초밥", "계란 김밥", "오이 김밥"],
+        global: ["포케", "그릭 샐러드", "치킨 랩", "렌틸 수프"]
+      },
+      hangover: {
+        korean: ["콩나물국밥", "북엇국", "뼈해장국", "순대국", "선지해장국", "부대찌개"],
+        italian: ["토마토 해장 파스타", "해산물 리조또", "미트볼 수프"],
+        chinese: ["짬뽕", "우육탕면", "백짬뽕", "완탕면"],
+        japanese: ["돈코츠 라멘", "나베 우동", "오뎅탕 정식"],
+        snack: ["어묵우동", "라면", "김치수제비", "칼국수"],
+        global: ["쌀국수", "똠얌 쌀국수", "멕시칸 수프", "치킨 누들 수프"]
+      },
+      sweet: {
+        korean: ["불고기덮밥", "단호박죽", "떡갈비 정식", "갈비탕"],
+        italian: ["고르곤졸라 피자", "크림 파스타", "단호박 리조또"],
+        chinese: ["꿔바로우", "유린기", "짜장면", "크림새우"],
+        japanese: ["카레라이스", "오므라이스", "가츠산도", "규카츠"],
+        snack: ["토스트", "떡꼬치", "치즈 김밥", "고구마 돈까스"],
+        global: ["팬케이크 브런치", "프렌치토스트", "치킨 와플", "망고 치킨 커리"]
+      },
+      power: {
+        korean: ["삼계탕", "장어덮밥", "갈비탕", "설렁탕", "오리백숙", "보쌈정식"],
+        italian: ["스테이크 리조또", "라구 파스타", "해산물 파스타"],
+        chinese: ["동파육덮밥", "양꼬치 정식", "깐풍기", "고기짬뽕"],
+        japanese: ["장어덮밥", "돈카츠", "스키야키 정식", "함박 스테이크"],
+        snack: ["돈까스 김밥", "치즈 라면", "튀김우동", "왕만두"],
+        global: ["스테이크 샐러드", "치킨 부리또", "비프 타코", "버터 치킨 커리"]
+      },
+      quick: {
+        korean: ["김밥", "비빔밥", "컵밥", "김치볶음밥", "국밥"],
+        italian: ["파니니", "피자 한 조각", "알리오 올리오", "리조또"],
+        chinese: ["짜장면", "볶음밥", "마파두부밥", "잡채밥"],
+        japanese: ["규동", "가츠동", "라멘", "우동"],
+        snack: ["떡볶이", "라면", "순대", "토스트", "김밥"],
+        global: ["샌드위치", "부리또", "포케", "쌀국수"]
+      },
+      date: {
+        korean: ["한정식", "육회비빔밥", "보쌈정식", "들기름 막국수"],
+        italian: ["봉골레 파스타", "마르게리타 피자", "라자냐", "뇨끼"],
+        chinese: ["딤섬", "유린기", "가지튀김덮밥", "우육면"],
+        japanese: ["스시 런치", "사케동", "텐동", "소바 정식"],
+        snack: ["즉석 떡볶이", "수제 튀김", "김밥 플래터"],
+        global: ["타코", "브런치 플레이트", "쌀국수", "샥슈카"]
+      },
+      group: {
+        korean: ["부대찌개", "쌈밥 정식", "보쌈", "닭갈비", "감자탕"],
+        italian: ["피자", "파스타 세트", "라자냐", "리조또 플래터"],
+        chinese: ["탕수육 세트", "양장피", "마라샹궈", "깐풍기"],
+        japanese: ["초밥 세트", "돈카츠 모둠", "나베", "텐동 세트"],
+        snack: ["즉석 떡볶이", "분식 세트", "튀김 세트", "김밥 모둠"],
+        global: ["타코 플래터", "커리 세트", "쌀국수 세트", "버거 세트"]
+      }
+    };
+
+    const fortuneThemes = [
+      { icon: "☯️", name: "음양", tone: "오늘은 뜨거운 기운과 차분한 기운이 반반이라 균형 잡힌 한 끼가 이깁니다." },
+      { icon: "🔥", name: "오행·화", tone: "불의 기운이 살짝 들떠 있어 매콤한 메뉴가 답답함을 태워줍니다." },
+      { icon: "🌊", name: "오행·수", tone: "물의 흐름이 막힌 생각을 씻어내니 국물 있는 점심이 좋습니다." },
+      { icon: "🌿", name: "오행·목", tone: "자라나는 기운이 강한 날이라 산뜻한 재료가 오후 집중력을 살립니다." },
+      { icon: "✨", name: "오행·금", tone: "선명하고 반짝이는 기운이 들어와 깔끔한 맛이 행운을 부릅니다." },
+      { icon: "🃏", name: "타로", tone: "점심의 카드는 전환입니다. 익숙한 메뉴에 작은 변주를 주세요." },
+      { icon: "☁️", name: "기상학", tone: "마음의 기압이 오르내립니다. 든든하지만 과하지 않은 메뉴가 안정적입니다." },
+      { icon: "🔢", name: "수비학", tone: "오늘의 숫자는 3입니다. 맛, 속도, 만족감 세 조건을 맞추면 좋습니다." },
+      { icon: "🌸", name: "계절의 기운", tone: "계절감 있는 한 입이 몸의 리듬을 다시 맞춰줍니다." }
+    ];
+
+    const allMenuNames = Object.values(menus).flatMap(group => Object.values(group).flat());
+
+    let selectedIntent = "stress";
+    let selectedCategory = "korean";
+    let selectedMenu = "";
+    let selectedGodId = "money";
+
+    const settings = {
+      mood: localStorage.getItem("foodGod.mood") || ""
+    };
+
+    function sample(items) {
+      return items[Math.floor(Math.random() * items.length)];
+    }
+
+    function unique(items) {
+      return [...new Set(items)];
+    }
+
+    function getPool(intentId = selectedIntent, categoryId = selectedCategory) {
+      return menus[intentId]?.[categoryId]?.length
+        ? menus[intentId][categoryId]
+        : unique(Object.values(menus[intentId] || {}).flat());
+    }
+
+    function currentGod() {
+      return gods.find(god => god.id === selectedGodId) || gods[0];
+    }
+
+    function getGodMenuPool(god = currentGod()) {
+      return unique(god.intents.flatMap(intentId => {
+        if (menus[intentId]) return Object.values(menus[intentId]).flat();
+        return Object.values(menus).flatMap(group => group[intentId] || []);
+      })).filter(Boolean);
+    }
+
+    function todayKorean() {
+      return new Intl.DateTimeFormat("ko-KR", {
+        dateStyle: "full",
+        timeZone: "Asia/Seoul"
+      }).format(new Date());
+    }
+
+    function localFortune() {
+      const god = currentGod();
+      const concern = $("#concernInput")?.value.trim();
+      const theme = sample(fortuneThemes);
+      const pool = getGodMenuPool(god);
+      const menu = sample(pool.length ? pool : allMenuNames);
+      const lucky = sample(god.luckyColors);
+      const side = sample(god.sides);
+      const direction = sample(["동쪽", "서쪽", "남쪽", "북쪽", "햇빛 드는 자리", "출입구에서 먼 자리", "창가"]);
+      const luckyTime = sample(["11:40", "12:07", "12:26", "12:48", "13:03"]);
+      const cautionTag = sample(["아무거나 금지", "과속 식사 주의", "찬 음료 천천히", "메뉴 회의 금지", "빈속 답장 금지"]);
+      const fortuneWeather = sample(["맑음 뒤 감칠맛", "흐림 뒤 탄수화물", "소나기 뒤 국물", "금빛 상승세", "초록빛 횡재수"]);
+      const dailyLuck = sample([
+        "오늘의 일진은 오전엔 살짝 삐걱대지만, 점심 이후부터 묘하게 풀리는 흐름이다.",
+        "오늘은 작은 선택이 큰 기분 차이를 만든다. 점심을 대충 넘기면 오후 운세가 얇아진다.",
+        "사람 운은 들쑥날쑥하지만 음식 운은 꽤 선명하다. 한 끼를 제대로 고르면 말실수를 피할 수 있다.",
+        "뜻밖의 제안이나 메시지가 들어올 수 있다. 배고픈 상태로 답하면 운이 반쯤 새어나간다."
+      ]);
+      const caution = sample([
+        "조심할 것은 애매한 메뉴와 애매한 대답이다. 둘 다 오늘은 후회를 부른다.",
+        "찬 음료를 너무 빨리 들이키면 오후 집중력이 잠깐 흔들릴 수 있다.",
+        "누군가의 '아무거나'를 믿지 마라. 오늘의 아무거나는 대체로 함정이다.",
+        "급하게 먹으면 복이 체한다. 첫 세 숟가락은 천천히 가라."
+      ]);
+      const prophecy = sample([
+        "식사 후 17분 안에 작은 웃음이 하나 들어오고, 그게 오늘의 균형추가 된다.",
+        "계산대 근처에서 메뉴 선택을 칭찬받거나, 최소한 스스로를 조금 칭찬하게 된다.",
+        "오후의 귀찮은 일이 생각보다 빨리 끝날 징조가 보인다. 단, 배를 비워두면 그 징조가 도망간다.",
+        "오늘의 행운은 거창하게 오지 않는다. 맛있는 한 입 뒤에 조용히 붙어 온다."
+      ]);
+      const reason = concern
+        ? `네가 털어놓은 고민은 "${concern}"이다. 이 정도면 점심이 아니라 작은 의식이 필요하다.`
+        : sample([
+        "결정 피로가 높은 날엔 맛의 방향이 선명한 메뉴가 마음을 빨리 정리해줍니다.",
+        "오후에 한 번 더 힘을 내야 하니 탄수화물과 감칠맛의 균형이 필요합니다.",
+        "오늘은 낯선 선택보다 먹고 난 뒤 후회가 적은 안정적인 한 끼가 유리합니다.",
+        "작은 만족감이 큰 집중력으로 이어지는 날이라 첫 입의 임팩트가 중요합니다."
+      ]);
+
+      return {
+        theme: `${god.emoji} ${god.name} · ${theme.name}`,
+        menu,
+        fortune: `${sample(god.voices)} ${dailyLuck} ${reason} ${caution} ${prophecy}`,
+        luckyColor: lucky,
+        side,
+        direction,
+        luckyTime,
+        cautionTag,
+        fortuneWeather,
+        confidence: `${Math.floor(82 + Math.random() * 15)}%`
+      };
+    }
+
+    async function aiFortune() {
+      const god = currentGod();
+      const concern = $("#concernInput")?.value.trim() || settings.mood || "특별한 고민 없음";
+      const response = await fetch("/api/fortune", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          today: todayKorean(),
+          god,
+          concern,
+          menuCandidates: getGodMenuPool(god).slice(0, 80)
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`API ${response.status}`);
+      }
+
+      return response.json();
+    }
+
+    function renderFortuneResult(data, target = $("#fortuneResult")) {
+      selectedMenu = data.menu;
+      target.innerHTML = `
+        <article class="result-card">
+          <div class="result-kicker">
+            <span>${escapeHtml(data.theme || "🔮 오늘의 점심 판결")}</span>
+            <span>적중감 ${escapeHtml(data.confidence || "88%")}</span>
+          </div>
+          <h2 class="menu-name">${escapeHtml(data.menu)}</h2>
+          <p class="fortune-text">${escapeHtml(data.fortune)}</p>
+          <div class="chips">
+            <span class="chip">오늘의 방향 ${escapeHtml(data.direction || "창가")}</span>
+            <span class="chip">행운색 ${escapeHtml(data.luckyColor || "노랑")}</span>
+            <span class="chip">행운 시간 ${escapeHtml(data.luckyTime || "12:26")}</span>
+            <span class="chip">조심 ${escapeHtml(data.cautionTag || "아무거나 금지")}</span>
+            <span class="chip">운세 날씨 ${escapeHtml(data.fortuneWeather || "맑음 뒤 감칠맛")}</span>
+            <span class="chip">곁들임 ${escapeHtml(data.side || "따뜻한 차")}</span>
+            <span class="chip">${todayKorean()}</span>
+          </div>
+        </article>
+        <div class="actions">
+          <button class="ghost" type="button" id="againFortune">다시 보기</button>
+          <button class="secondary" type="button" id="findFortuneRestaurant">지도에서 식당 보기</button>
+        </div>
+      `;
+      $("#againFortune").addEventListener("click", askFortune);
+      $("#findFortuneRestaurant").addEventListener("click", () => showRestaurantPicker($("#fortuneRestaurant"), selectedMenu));
+    }
+
+    async function askFortune() {
+      const button = $("#askFortune");
+      button.disabled = true;
+      button.textContent = `${currentGod().name}이 메뉴를 고르는 중...`;
+      $("#fortuneResult").innerHTML = "";
+      $("#fortuneRestaurant").classList.remove("active");
+      $("#fortuneStage").classList.add("is-cooking");
+
+      await new Promise(resolve => setTimeout(resolve, 1200));
+
+      try {
+        const data = await aiFortune();
+        renderFortuneResult(data);
+      } catch (error) {
+        renderFortuneResult({
+          ...localFortune(),
+          theme: "🔮 로컬 점심 판결",
+          fortune: "AI 호출이 잠깐 삐끗했지만 점심의 흐름은 멈추지 않습니다. 오늘은 검증된 맛으로 안전하게 가면 오후의 리듬이 살아납니다."
+        });
+      } finally {
+        $("#fortuneStage").classList.remove("is-cooking");
+        button.disabled = false;
+        button.textContent = "오늘 점심 골라줘";
+      }
+    }
+
+    function showRestaurantPicker(root, menu) {
+      if (!menu) return;
+      const query = encodeURIComponent(`${menu} 맛집`);
+      window.open(`https://map.naver.com/p/search/${query}`, "_blank", "noopener,noreferrer");
+    }
+
+    function renderGods() {
+      const selectedIndex = Math.max(0, gods.findIndex(god => god.id === selectedGodId));
+      $("#godCarousel").innerHTML = `
+        <div class="god-track" style="transform: translateX(-${selectedIndex * 100}%);">
+          ${gods.map(god => `
+            <article class="god-slide" aria-hidden="${god.id === selectedGodId ? "false" : "true"}">
+              <img src="${god.image}" alt="${god.name}" />
+              <div class="god-caption">
+                <b>${god.emoji} ${god.name}</b>
+                <span>${god.title} · ${god.mood}</span>
+              </div>
+            </article>
+          `).join("")}
+        </div>
+        <button class="carousel-button prev" type="button" id="prevGod" aria-label="이전 신">‹</button>
+        <button class="carousel-button next" type="button" id="nextGod" aria-label="다음 신">›</button>
+        <div class="god-dots" aria-hidden="true">
+          ${gods.map(god => `<span class="god-dot ${god.id === selectedGodId ? "active" : ""}"></span>`).join("")}
+        </div>
+      `;
+
+      $("#prevGod").addEventListener("click", () => selectGodByOffset(-1));
+      $("#nextGod").addEventListener("click", () => selectGodByOffset(1));
+
+      let startX = 0;
+      let startY = 0;
+      const carousel = $("#godCarousel");
+      carousel.addEventListener("touchstart", event => {
+        startX = event.touches[0].clientX;
+        startY = event.touches[0].clientY;
+      }, { passive: true });
+      carousel.addEventListener("touchend", event => {
+        const touch = event.changedTouches[0];
+        const dx = touch.clientX - startX;
+        const dy = touch.clientY - startY;
+        if (Math.abs(dx) > 48 && Math.abs(dx) > Math.abs(dy)) {
+          selectGodByOffset(dx < 0 ? 1 : -1);
+        }
+      }, { passive: true });
+    }
+
+    function selectGodByOffset(offset) {
+      const currentIndex = Math.max(0, gods.findIndex(god => god.id === selectedGodId));
+      const nextIndex = (currentIndex + offset + gods.length) % gods.length;
+      selectedGodId = gods[nextIndex].id;
+      $("#fortuneResult").innerHTML = "";
+      $("#fortuneRestaurant").classList.remove("active");
+      renderGods();
+    }
+
+    function renderQuickOfferings() {
+      const examples = [
+        "상사가 개짜증나요",
+        "다이어트는 하는데 맛있는 건 먹고 싶어요",
+        "시험 망했어요",
+        "친구랑 싸웠어요",
+        "돈 없어요",
+        "데이트 날이에요",
+        "월급날 전이라 지갑이 얇아요",
+        "오늘 운이 좀 따라줬으면 좋겠어요",
+        "회식장소 구해요",
+        "그냥 아무거나 정해주세요"
+      ];
+
+      const loopItems = [...examples, ...examples];
+      $("#quickOfferings").innerHTML = `
+        <div class="quick-offerings-track">
+          ${loopItems.map(text => `
+            <button class="quick-offering" type="button">${escapeHtml(text)}</button>
+          `).join("")}
+        </div>
+      `;
+
+      $$(".quick-offering").forEach(button => {
+        button.addEventListener("click", () => {
+          $("#concernInput").value = button.textContent.trim();
+        });
+      });
+
+      bindOfferingDrag();
+    }
+
+    function bindOfferingDrag() {
+      const scroller = $("#quickOfferings");
+      let isDown = false;
+      let startX = 0;
+      let startScrollLeft = 0;
+      let moved = false;
+
+      scroller.addEventListener("pointerdown", event => {
+        isDown = true;
+        moved = false;
+        startX = event.clientX;
+        startScrollLeft = scroller.scrollLeft;
+        scroller.classList.add("dragging");
+        scroller.setPointerCapture(event.pointerId);
+      });
+
+      scroller.addEventListener("pointermove", event => {
+        if (!isDown) return;
+        const dx = event.clientX - startX;
+        if (Math.abs(dx) > 4) moved = true;
+        scroller.scrollLeft = startScrollLeft - dx;
+      });
+
+      function stopDrag(event) {
+        if (!isDown) return;
+        isDown = false;
+        scroller.classList.remove("dragging");
+        if (event?.pointerId !== undefined && scroller.hasPointerCapture(event.pointerId)) {
+          scroller.releasePointerCapture(event.pointerId);
+        }
+      }
+
+      scroller.addEventListener("pointerup", stopDrag);
+      scroller.addEventListener("pointercancel", stopDrag);
+      scroller.addEventListener("pointerleave", stopDrag);
+
+      scroller.addEventListener("click", event => {
+        if (!moved) return;
+        event.preventDefault();
+        event.stopPropagation();
+        moved = false;
+      }, true);
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "").replace(/[&<>"']/g, char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      }[char]));
+    }
+
+    function bindSettings() {
+      const dialog = $("#settingsDialog");
+      $("#userMood").value = settings.mood;
+
+      $("#openSettings").addEventListener("click", () => dialog.showModal());
+      $("#saveSettings").addEventListener("click", event => {
+        event.preventDefault();
+        settings.mood = $("#userMood").value.trim();
+        localStorage.setItem("foodGod.mood", settings.mood);
+        $("#settingsStatus").textContent = "저장되었습니다.";
+        setTimeout(() => dialog.close(), 420);
+      });
+    }
+
+    bindSettings();
+    renderGods();
+    renderQuickOfferings();
+    $("#askFortune").addEventListener("click", askFortune);
+  </script>
+</body>
+</html>
