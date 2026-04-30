@@ -128,8 +128,8 @@
     }
 
     h1 {
-      font-size: clamp(46px, 7.2vw, 88px);
-      line-height: 0.96;
+      font-size: clamp(36px, 5.8vw, 68px);
+      line-height: 1.05;
       margin: 0;
       letter-spacing: 0;
     }
@@ -187,36 +187,6 @@
       min-height: 374px;
       touch-action: pan-y;
     }
-
-    .swipe-hint {
-      position: absolute;
-      z-index: 2;
-      top: 12px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 7px 11px;
-      border-radius: 999px;
-      background: rgba(9, 8, 10, 0.54);
-      border: 1px solid rgba(255, 247, 232, 0.18);
-      color: #fff7e8;
-      font-size: 12px;
-      font-weight: 900;
-      white-space: nowrap;
-      backdrop-filter: blur(12px);
-      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
-    }
-
-    .swipe-hint::before,
-    .swipe-hint::after {
-      color: #f2d49a;
-      font-size: 15px;
-    }
-
-    .swipe-hint::before { content: "‹"; }
-    .swipe-hint::after { content: "›"; }
 
     .god-track {
       display: flex;
@@ -968,9 +938,9 @@
       }
 
       h1 {
-        font-size: clamp(32px, 9.4vw, 38px);
-        line-height: 1;
-        white-space: nowrap;
+        font-size: clamp(28px, 7.6vw, 34px);
+        line-height: 1.12;
+        white-space: normal;
       }
 
       .lead {
@@ -1030,14 +1000,14 @@
     <header class="topbar">
       <div class="brand" aria-label="음식의 신">
         <span class="brand-mark">食</span>
-        <span>음식의 신</span>
+        <span>운명의 점심메뉴</span>
       </div>
     </header>
 
     <main class="hero">
       <section class="copy" aria-labelledby="appTitle">
-        <h1 id="appTitle">운명의 점심메뉴</h1>
-        <p class="lead">이미지를 넘겨 지금 기분에 끌리는 신을 고르세요. 당신의 점심 고민을 쓸데없이 진지하게 해결해줍니다.</p>
+        <h1 id="appTitle">좌로 넘겨 음식의 신을 선택하세요</h1>
+        <p class="lead">마음에 드는 신에서 멈추면 오늘의 점심 고민을 쓸데없이 진지하게 해결해줍니다.</p>
       </section>
 
       <section class="app-panel" aria-label="점심 메뉴 추천 앱">
@@ -1057,10 +1027,6 @@
                     <div class="saju-field">
                       <label for="birthDateInput">생년월일</label>
                       <input id="birthDateInput" type="text" inputmode="numeric" maxlength="6" placeholder="예: 900815" autocomplete="bday" />
-                    </div>
-                    <div class="saju-field">
-                      <label for="birthTimeInput">태어난 시간</label>
-                      <input id="birthTimeInput" type="time" />
                     </div>
                   </div>
                 </details>
@@ -1326,6 +1292,7 @@
     let selectedCategory = "korean";
     let selectedMenu = "";
     let selectedGodId = "money";
+    let godAutoTimer = null;
 
     function sample(items) {
       return items[Math.floor(Math.random() * items.length)];
@@ -1370,13 +1337,9 @@
 
     function birthInfoText() {
       const rawBirthDate = $("#birthDateInput")?.value.trim() || "";
-      const birthTime = $("#birthTimeInput")?.value;
       const digits = rawBirthDate.replace(/\D/g, "");
       const birthDate = digits.length >= 6 ? digits.slice(0, 6) : digits;
-      if (!birthDate && !birthTime) return "";
-      if (birthDate && birthTime) return `${birthDate} ${birthTime}`;
-      if (birthDate) return `${birthDate}, 태어난 시간 모름`;
-      return `생년월일 모름, 태어난 시간 ${birthTime}`;
+      return birthDate || "";
     }
 
     function localFortune() {
@@ -1570,7 +1533,6 @@
         <div class="god-dots" aria-hidden="true">
           ${gods.map(god => `<span class="god-dot ${god.id === selectedGodId ? "active" : ""}"></span>`).join("")}
         </div>
-        <div class="swipe-hint">신을 넘겨 선택</div>
       `;
 
       $("#prevGod").addEventListener("click", () => selectGodByOffset(-1));
@@ -1602,6 +1564,16 @@
       showInputScreen();
       renderGods();
       renderQuickOfferings();
+    }
+
+    function startGodAutoAdvance() {
+      if (godAutoTimer) window.clearInterval(godAutoTimer);
+      godAutoTimer = window.setInterval(() => {
+        const inputScreen = $("#inputScreen");
+        const askButton = $("#askFortune");
+        if (!inputScreen || inputScreen.hidden || askButton?.disabled) return;
+        selectGodByOffset(1);
+      }, 3000);
     }
 
     function renderQuickOfferings() {
@@ -1636,6 +1608,7 @@
 
     renderGods();
     renderQuickOfferings();
+    startGodAutoAdvance();
     $("#askFortune").addEventListener("click", askFortune);
   </script>
 </body>
