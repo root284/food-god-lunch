@@ -291,6 +291,38 @@
       background: #fffaf2;
     }
 
+    .god-lock {
+      position: absolute;
+      z-index: 3;
+      top: 12px;
+      right: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 11px;
+      border-radius: 999px;
+      background: rgba(255, 250, 242, 0.88);
+      color: #201916;
+      border: 1px solid rgba(255, 250, 242, 0.74);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
+      font-size: 13px;
+      font-weight: 900;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .god-lock input {
+      width: 15px;
+      height: 15px;
+      margin: 0;
+      accent-color: var(--accent);
+    }
+
+    .god-carousel.is-locked .carousel-button {
+      opacity: 0.46;
+      cursor: not-allowed;
+    }
+
     .fortune-stage.is-cooking .god-carousel {
       animation: divineSteam 0.72s ease-in-out infinite alternate;
     }
@@ -1286,12 +1318,84 @@
       { icon: "🌸", name: "계절의 기운", tone: "계절감 있는 한 입이 몸의 리듬을 다시 맞춰줍니다." }
     ];
 
+    const elementProfiles = {
+      wood: {
+        name: "목",
+        label: "목(木)",
+        tone: "자라는 기운",
+        menuMood: "초록 재료와 산뜻한 식감",
+        reason: "기운이 위로 뻗는 날이라 무겁게 누르는 음식보다 채소, 허브, 새콤한 맛이 오후 리듬을 살린다.",
+        menus: ["비빔밥", "메밀국수", "시래기밥", "닭가슴살 비빔밥", "카프레제 샐러드", "샐러드 파스타", "포케", "그릭 샐러드", "키토 김밥", "오이 김밥", "소바", "연어 샐러드동"]
+      },
+      fire: {
+        name: "화",
+        label: "화(火)",
+        tone: "달아오른 기운",
+        menuMood: "매콤함과 불맛",
+        reason: "안쪽 열이 올라오는 흐름이라 매운맛이나 구운 향으로 답답함을 태우되, 너무 과하면 오후에 급격히 꺼질 수 있다.",
+        menus: ["제육볶음", "낙지볶음", "닭볶음탕", "마라탕", "마파두부 덮밥", "짬뽕", "아라비아따 파스타", "매콤 로제 파스타", "디아볼라 피자", "국물 떡볶이", "라볶이", "버팔로 치킨랩"]
+      },
+      earth: {
+        name: "토",
+        label: "토(土)",
+        tone: "중심을 잡는 기운",
+        menuMood: "밥, 구수함, 든든한 한 그릇",
+        reason: "기운이 가운데로 모이는 편이라 밥과 단백질이 안정감을 만들고, 지나치게 가벼운 메뉴는 금방 허전해질 수 있다.",
+        menus: ["갈비탕", "설렁탕", "국밥", "불고기덮밥", "단호박죽", "떡갈비 정식", "비빔밥", "김치볶음밥", "카레라이스", "오므라이스", "리조또", "버터 치킨 커리"]
+      },
+      metal: {
+        name: "금",
+        label: "금(金)",
+        tone: "정리되는 기운",
+        menuMood: "깔끔한 맛과 바삭한 식감",
+        reason: "생각을 정리하는 힘이 필요한 날이라 맛이 선명하고 마무리가 깨끗한 메뉴가 판단력을 덜 흐린다.",
+        menus: ["돈카츠", "텐동", "가츠동", "돈까스 김밥", "탕수육 세트", "꿔바로우", "유린기", "초밥 세트", "스시 런치", "소바 정식", "파니니", "샌드위치"]
+      },
+      water: {
+        name: "수",
+        label: "수(水)",
+        tone: "흐르는 기운",
+        menuMood: "국물, 면, 해산물",
+        reason: "머릿속이 복잡하게 흐르는 날이라 따뜻한 국물이나 부드러운 면이 긴장을 풀고 생각을 한 방향으로 모아준다.",
+        menus: ["콩나물국밥", "북엇국", "뼈해장국", "순대국", "쌀국수", "돈코츠 라멘", "나베 우동", "어묵우동", "칼국수", "우육탕면", "완탕면", "해산물 리조또", "봉골레 파스타"]
+      }
+    };
+
+    const yearElementByLastDigit = {
+      0: "metal",
+      1: "metal",
+      2: "water",
+      3: "water",
+      4: "wood",
+      5: "wood",
+      6: "fire",
+      7: "fire",
+      8: "earth",
+      9: "earth"
+    };
+
+    const seasonElementByMonth = {
+      1: "water",
+      2: "wood",
+      3: "wood",
+      4: "wood",
+      5: "fire",
+      6: "fire",
+      7: "fire",
+      8: "earth",
+      9: "metal",
+      10: "metal",
+      11: "water",
+      12: "water"
+    };
+
     const allMenuNames = Object.values(menus).flatMap(group => Object.values(group).flat());
 
     let selectedIntent = "stress";
     let selectedCategory = "korean";
     let selectedMenu = "";
     let selectedGodId = "money";
+    let isGodLocked = false;
     let godAutoTimer = null;
     let lastUserActionAt = Date.now();
 
@@ -1314,6 +1418,14 @@
         [shuffled[index], shuffled[target]] = [shuffled[target], shuffled[index]];
       }
       return shuffled;
+    }
+
+    function subjectParticle(text) {
+      const last = String(text || "").trim().at(-1);
+      if (!last) return "은";
+      const code = last.charCodeAt(0);
+      if (code < 0xac00 || code > 0xd7a3) return "는";
+      return (code - 0xac00) % 28 ? "은" : "는";
     }
 
     function getPool(intentId = selectedIntent, categoryId = selectedCategory) {
@@ -1347,19 +1459,68 @@
       return birthDate || "";
     }
 
+    function birthElementReading(birthInfo = birthInfoText()) {
+      if (!/^\d{6}$/.test(birthInfo)) return null;
+      const month = Number(birthInfo.slice(2, 4));
+      const day = Number(birthInfo.slice(4, 6));
+      if (month < 1 || month > 12 || day < 1 || day > 31) return null;
+
+      const yearElement = yearElementByLastDigit[Number(birthInfo[1])];
+      const seasonElement = seasonElementByMonth[month];
+      const dayElementKeys = ["water", "wood", "fire", "earth", "metal"];
+      const dayElement = dayElementKeys[day % dayElementKeys.length];
+      const scores = { wood: 0, fire: 0, earth: 0, metal: 0, water: 0 };
+      scores[yearElement] += 2;
+      scores[seasonElement] += 2;
+      scores[dayElement] += 1;
+      const primary = Object.entries(scores).sort((a, b) => b[1] - a[1])[0][0];
+      const profile = elementProfiles[primary];
+
+      return {
+        code: primary,
+        label: profile.label,
+        tone: profile.tone,
+        menuMood: profile.menuMood,
+        reason: profile.reason,
+        summary: `${profile.label} ${profile.tone} · ${profile.menuMood}`,
+        detail: `연도 끝자리와 태어난 달의 계절감을 가볍게 보니 ${profile.label} 쪽 기운이 앞선다. ${profile.reason}`
+      };
+    }
+
+    function getBirthElementMenuPool(reading = birthElementReading()) {
+      if (!reading) return [];
+      const profileMenus = elementProfiles[reading.code]?.menus || [];
+      return unique(profileMenus.filter(menu => allMenuNames.includes(menu)).concat(profileMenus));
+    }
+
     function localFortune() {
       const god = currentGod();
       const concern = $("#concernInput")?.value.trim();
       const birthInfo = birthInfoText();
+      const elementReading = birthElementReading(birthInfo);
       const theme = sample(fortuneThemes);
-      const pool = getGodMenuPool(god);
+      const godPool = getGodMenuPool(god);
+      const elementPool = getBirthElementMenuPool(elementReading);
+      const pool = elementReading
+        ? [...elementPool, ...elementPool, ...godPool, ...allMenuNames]
+        : [...godPool, ...allMenuNames];
       const menu = sample(pool.length ? pool : allMenuNames);
-      const lucky = sample(god.luckyColors);
+      const lucky = elementReading
+        ? sample({
+          wood: ["새싹 초록", "바질 초록", "청포도 연두"],
+          fire: ["고추장 빨강", "불판 주황", "토마토 빨강"],
+          earth: ["현미 베이지", "단호박 노랑", "된장 갈색"],
+          metal: ["무채 흰색", "스테인리스 은색", "깨끗한 아이보리"],
+          water: ["깊은 파랑", "다시마 초록", "국물빛 하늘색"]
+        }[elementReading.code])
+        : sample(god.luckyColors);
       const side = sample(god.sides);
       const direction = sample(["동쪽", "서쪽", "남쪽", "북쪽", "햇빛 드는 자리", "출입구에서 먼 자리", "창가"]);
       const luckyTime = sample(["11:40", "12:07", "12:26", "12:48", "13:03"]);
       const cautionTag = sample(["아무거나 금지", "과속 식사 주의", "찬 음료 천천히", "메뉴 회의 금지", "빈속 답장 금지"]);
-      const fortuneWeather = sample(["맑음 뒤 감칠맛", "흐림 뒤 탄수화물", "소나기 뒤 국물", "금빛 상승세", "초록빛 횡재수"]);
+      const fortuneWeather = elementReading
+        ? `${elementProfiles[elementReading.code].name}기운 ${sample(["상승", "정돈", "순환", "충전"])}`
+        : sample(["맑음 뒤 감칠맛", "흐림 뒤 탄수화물", "소나기 뒤 국물", "금빛 상승세", "초록빛 횡재수"]);
       const dailyLuck = sample([
         "오늘의 일진은 오전엔 살짝 삐걱대지만, 점심 이후부터 묘하게 풀리는 흐름이다.",
         "오늘은 작은 선택이 큰 기분 차이를 만든다. 점심을 대충 넘기면 오후 운세가 얇아진다.",
@@ -1386,12 +1547,12 @@
         "오늘은 낯선 선택보다 먹고 난 뒤 후회가 적은 안정적인 한 끼가 유리합니다.",
         "작은 만족감이 큰 집중력으로 이어지는 날이라 첫 입의 임팩트가 중요합니다."
       ]);
-      const sajuFlavor = birthInfo
-        ? `사주맛으로 보면 ${birthInfo}의 기운은 오늘 ${sample(["불맛", "국물", "초록 재료", "바삭함", "따뜻한 밥"])} 쪽에 살짝 기운다.`
+      const sajuFlavor = elementReading
+        ? `사주맛으로 보면 ${birthInfo}는 ${elementReading.summary} 쪽이다. 그래서 ${menu}${subjectParticle(menu)} ${elementReading.menuMood}을 점심에 끌어와 기운을 덜 새게 만든다.`
         : "";
 
       return {
-        theme: `${god.emoji} ${god.name} · ${theme.name}`,
+        theme: elementReading ? `${god.emoji} ${god.name} · ${elementReading.label} 사주맛` : `${god.emoji} ${god.name} · ${theme.name}`,
         menu,
         fortune: `${sample(god.voices)} ${dailyLuck} ${reason} ${sajuFlavor} ${caution} ${prophecy}`,
         luckyColor: lucky,
@@ -1408,6 +1569,10 @@
       const god = currentGod();
       const concern = $("#concernInput")?.value.trim() || "특별한 고민 없음";
       const birthInfo = birthInfoText() || "입력 안 함";
+      const elementReading = birthElementReading(birthInfo);
+      const menuCandidates = elementReading
+        ? unique([...getBirthElementMenuPool(elementReading), ...shuffle(getGodMenuPool(god))])
+        : shuffle(getGodMenuPool(god));
       const response = await fetch("/api/fortune", {
         method: "POST",
         headers: {
@@ -1418,8 +1583,9 @@
           god,
           concern,
           birthInfo,
+          elementReading,
           omenSeed: Math.random().toString(36).slice(2, 10),
-          menuCandidates: shuffle(getGodMenuPool(god)).slice(0, 80)
+          menuCandidates: menuCandidates.slice(0, 80)
         })
       });
 
@@ -1434,6 +1600,7 @@
       selectedMenu = data.menu;
       const god = currentGod();
       const birthInfo = birthInfoText();
+      const elementReading = birthElementReading(birthInfo);
       target.innerHTML = `
         <section class="result-hero" style="--result-image: url('${god.image}')">
           <div class="result-hero-copy">
@@ -1455,7 +1622,8 @@
             <span class="chip">조심 ${escapeHtml(data.cautionTag || "아무거나 금지")}</span>
             <span class="chip">운세 날씨 ${escapeHtml(data.fortuneWeather || "맑음 뒤 감칠맛")}</span>
             <span class="chip">곁들임 ${escapeHtml(data.side || "따뜻한 차")}</span>
-            ${birthInfo ? `<span class="chip">사주맛 ${escapeHtml(birthInfo)}</span>` : ""}
+            ${elementReading ? `<span class="chip">사주맛 ${escapeHtml(elementReading.summary)}</span>` : ""}
+            ${birthInfo && !elementReading ? `<span class="chip">사주맛 ${escapeHtml(birthInfo)}</span>` : ""}
             <span class="chip">${todayKorean()}</span>
           </div>
         </article>
@@ -1533,12 +1701,23 @@
             </article>
           `).join("")}
         </div>
+        <label class="god-lock">
+          <input id="lockGod" type="checkbox" ${isGodLocked ? "checked" : ""} />
+          선택 고정
+        </label>
         <button class="carousel-button prev" type="button" id="prevGod" aria-label="이전 신">‹</button>
         <button class="carousel-button next" type="button" id="nextGod" aria-label="다음 신">›</button>
         <div class="god-dots" aria-hidden="true">
           ${gods.map(god => `<span class="god-dot ${god.id === selectedGodId ? "active" : ""}"></span>`).join("")}
         </div>
       `;
+      $("#godCarousel").classList.toggle("is-locked", isGodLocked);
+
+      $("#lockGod").addEventListener("change", event => {
+        markUserAction();
+        isGodLocked = event.target.checked;
+        $("#godCarousel").classList.toggle("is-locked", isGodLocked);
+      });
 
       $("#prevGod").addEventListener("click", () => {
         markUserAction();
@@ -1569,6 +1748,7 @@
     }
 
     function selectGodByOffset(offset) {
+      if (isGodLocked) return;
       const currentIndex = Math.max(0, gods.findIndex(god => god.id === selectedGodId));
       const nextIndex = (currentIndex + offset + gods.length) % gods.length;
       selectedGodId = gods[nextIndex].id;
@@ -1586,7 +1766,8 @@
         const askButton = $("#askFortune");
         const inactiveFor = Date.now() - lastUserActionAt;
         if (!inputScreen || inputScreen.hidden || askButton?.disabled) return;
-        if (inactiveFor < 4000) return;
+        if (isGodLocked) return;
+        if (inactiveFor < 3000) return;
         lastUserActionAt = Date.now();
         selectGodByOffset(1);
       }, 1000);
