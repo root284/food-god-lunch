@@ -574,20 +574,21 @@
 
     .result {
       display: grid;
-      gap: 12px;
+      gap: 14px;
     }
 
     .result-hero {
-      min-height: 236px;
+      min-height: 390px;
       border: 1px solid rgba(255, 247, 232, 0.18);
       border-radius: var(--radius);
       position: relative;
       overflow: hidden;
-      display: grid;
-      align-items: end;
+      display: flex;
+      align-items: stretch;
       background:
-        linear-gradient(180deg, rgba(9, 8, 10, 0.1), rgba(9, 8, 10, 0.84)),
-        var(--result-image) center 16% / cover no-repeat;
+        linear-gradient(180deg, rgba(9, 8, 10, 0.02), rgba(9, 8, 10, 0.36) 42%, rgba(9, 8, 10, 0.9)),
+        var(--result-image) center 10% / cover no-repeat;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.36);
     }
 
     .result-hero::after {
@@ -595,43 +596,111 @@
       position: absolute;
       inset: 0;
       background:
-        radial-gradient(circle at 76% 22%, rgba(229, 180, 93, 0.22), transparent 24%),
-        radial-gradient(circle at 16% 78%, rgba(32, 164, 134, 0.18), transparent 30%);
+        linear-gradient(90deg, rgba(9, 8, 10, 0.42), transparent 28%, rgba(9, 8, 10, 0.24)),
+        radial-gradient(circle at 78% 18%, rgba(229, 180, 93, 0.22), transparent 24%),
+        radial-gradient(circle at 18% 82%, rgba(32, 164, 134, 0.18), transparent 30%),
+        repeating-linear-gradient(115deg, rgba(255, 247, 232, 0.055) 0 1px, transparent 1px 58px);
       pointer-events: none;
     }
 
     .result-hero-copy {
       position: relative;
       z-index: 1;
-      padding: 16px;
+      width: 100%;
+      display: grid;
+      align-content: space-between;
+      gap: 22px;
+      padding: 18px;
       text-shadow: 0 2px 22px rgba(0, 0, 0, 0.72);
     }
 
-    .result-hero-copy span {
+    .result-seal-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .result-seal {
       display: inline-flex;
+      align-items: center;
+      gap: 7px;
       padding: 6px 9px;
       border-radius: 999px;
-      background: rgba(255, 247, 232, 0.12);
-      border: 1px solid rgba(255, 247, 232, 0.16);
+      background: rgba(255, 247, 232, 0.16);
+      border: 1px solid rgba(255, 247, 232, 0.24);
       color: #f2d49a;
       font-size: 12px;
       font-weight: 900;
-      margin-bottom: 8px;
+      backdrop-filter: blur(10px);
+    }
+
+    .result-confidence {
+      display: grid;
+      place-items: center;
+      min-width: 72px;
+      min-height: 72px;
+      border-radius: 50%;
+      background: rgba(9, 8, 10, 0.42);
+      border: 1px solid rgba(242, 212, 154, 0.38);
+      color: #fff7e8;
+      box-shadow: inset 0 0 30px rgba(229, 180, 93, 0.16);
+      text-align: center;
+      font-size: 11px;
+      font-weight: 900;
+      line-height: 1.15;
+      backdrop-filter: blur(10px);
+    }
+
+    .result-confidence b {
+      display: block;
+      color: #f2d49a;
+      font-size: 21px;
+      line-height: 1.05;
+    }
+
+    .result-menu-plate {
+      max-width: 560px;
+    }
+
+    .result-menu-plate p {
+      margin: 0 0 8px;
+      color: rgba(255, 247, 232, 0.78);
+      font-size: 13px;
+      font-weight: 900;
+      line-height: 1.35;
     }
 
     .result-hero-copy h2 {
       margin: 0;
-      font-size: 38px;
-      line-height: 1;
+      font-size: 46px;
+      line-height: 1.02;
       letter-spacing: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .result-oracle-line {
+      margin-top: 12px;
+      display: inline-flex;
+      max-width: 100%;
+      padding: 10px 12px;
+      border-left: 3px solid #e5b45d;
+      background: rgba(9, 8, 10, 0.4);
+      color: #fff7e8;
+      font-size: 14px;
+      font-weight: 850;
+      line-height: 1.45;
+      backdrop-filter: blur(12px);
     }
 
     .result-card {
-      background: rgba(255, 247, 232, 0.1);
+      background:
+        linear-gradient(180deg, rgba(255, 247, 232, 0.14), rgba(255, 247, 232, 0.07));
       border: 1px solid rgba(255, 247, 232, 0.18);
       border-radius: var(--radius);
-      padding: 15px;
+      padding: 16px;
       color: var(--ink);
+      box-shadow: inset 0 1px 0 rgba(255, 247, 232, 0.08);
     }
 
     .result-kicker {
@@ -659,11 +728,42 @@
       font-weight: 620;
     }
 
+    .result-stats {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .result-stat {
+      min-height: 74px;
+      padding: 10px;
+      border-radius: var(--radius);
+      background: rgba(9, 8, 10, 0.26);
+      border: 1px solid rgba(255, 247, 232, 0.13);
+      display: grid;
+      gap: 4px;
+      align-content: center;
+    }
+
+    .result-stat span {
+      color: rgba(255, 247, 232, 0.62);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .result-stat b {
+      color: #fff7e8;
+      font-size: 16px;
+      line-height: 1.2;
+      overflow-wrap: anywhere;
+    }
+
     .chips {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
-      margin-top: 12px;
+      margin-top: 10px;
     }
 
     .chip {
@@ -673,6 +773,12 @@
       color: #f2d49a;
       font-size: 13px;
       font-weight: 800;
+    }
+
+    .chip.saju-chip {
+      background: rgba(32, 164, 134, 0.18);
+      color: #9ce7d0;
+      border: 1px solid rgba(156, 231, 208, 0.16);
     }
 
     .actions {
@@ -1008,6 +1114,38 @@
 
       .god-caption b {
         font-size: 27px;
+      }
+
+      .result-hero {
+        min-height: 340px;
+        background-position: center 8%;
+      }
+
+      .result-hero-copy {
+        padding: 14px;
+        gap: 18px;
+      }
+
+      .result-confidence {
+        min-width: 62px;
+        min-height: 62px;
+      }
+
+      .result-confidence b {
+        font-size: 18px;
+      }
+
+      .result-hero-copy h2 {
+        font-size: 36px;
+      }
+
+      .result-oracle-line {
+        font-size: 13px;
+        padding: 9px 10px;
+      }
+
+      .result-stats {
+        grid-template-columns: 1fr 1fr;
       }
 
       .offering textarea {
@@ -1605,8 +1743,15 @@
       target.innerHTML = `
         <section class="result-hero" style="--result-image: url('${god.image}')">
           <div class="result-hero-copy">
-            <span>${escapeHtml(god.name)}의 점심 판결</span>
-            <h2>${escapeHtml(data.menu)}</h2>
+            <div class="result-seal-row">
+              <span class="result-seal">${escapeHtml(god.emoji)} ${escapeHtml(god.name)}의 점심 판결</span>
+              <span class="result-confidence"><b>${escapeHtml(data.confidence || "88%")}</b>적중감</span>
+            </div>
+            <div class="result-menu-plate">
+              <p>${escapeHtml(god.title)} · ${escapeHtml(data.fortuneWeather || "맑음 뒤 감칠맛")}</p>
+              <h2>${escapeHtml(data.menu)}</h2>
+              <div class="result-oracle-line">${escapeHtml(elementReading ? elementReading.summary : data.cautionTag || "아무거나 금지")}</div>
+            </div>
           </div>
         </section>
         <article class="result-card">
@@ -1616,15 +1761,17 @@
           </div>
           <h2 class="menu-name">${escapeHtml(data.menu)}</h2>
           <p class="fortune-text">${escapeHtml(data.fortune)}</p>
+          <div class="result-stats">
+            <div class="result-stat"><span>오늘의 방향</span><b>${escapeHtml(data.direction || "창가")}</b></div>
+            <div class="result-stat"><span>행운 시간</span><b>${escapeHtml(data.luckyTime || "12:26")}</b></div>
+            <div class="result-stat"><span>행운색</span><b>${escapeHtml(data.luckyColor || "노랑")}</b></div>
+            <div class="result-stat"><span>곁들임</span><b>${escapeHtml(data.side || "따뜻한 차")}</b></div>
+          </div>
           <div class="chips">
-            <span class="chip">오늘의 방향 ${escapeHtml(data.direction || "창가")}</span>
-            <span class="chip">행운색 ${escapeHtml(data.luckyColor || "노랑")}</span>
-            <span class="chip">행운 시간 ${escapeHtml(data.luckyTime || "12:26")}</span>
             <span class="chip">조심 ${escapeHtml(data.cautionTag || "아무거나 금지")}</span>
             <span class="chip">운세 날씨 ${escapeHtml(data.fortuneWeather || "맑음 뒤 감칠맛")}</span>
-            <span class="chip">곁들임 ${escapeHtml(data.side || "따뜻한 차")}</span>
-            ${elementReading ? `<span class="chip">사주맛 ${escapeHtml(elementReading.summary)}</span>` : ""}
-            ${birthInfo && !elementReading ? `<span class="chip">사주맛 ${escapeHtml(birthInfo)}</span>` : ""}
+            ${elementReading ? `<span class="chip saju-chip">사주맛 ${escapeHtml(elementReading.summary)}</span>` : ""}
+            ${birthInfo && !elementReading ? `<span class="chip saju-chip">사주맛 ${escapeHtml(birthInfo)}</span>` : ""}
             <span class="chip">${todayKorean()}</span>
           </div>
         </article>
