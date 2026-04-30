@@ -1293,6 +1293,11 @@
     let selectedMenu = "";
     let selectedGodId = "money";
     let godAutoTimer = null;
+    let lastUserActionAt = Date.now();
+
+    function markUserAction() {
+      lastUserActionAt = Date.now();
+    }
 
     function sample(items) {
       return items[Math.floor(Math.random() * items.length)];
@@ -1535,13 +1540,20 @@
         </div>
       `;
 
-      $("#prevGod").addEventListener("click", () => selectGodByOffset(-1));
-      $("#nextGod").addEventListener("click", () => selectGodByOffset(1));
+      $("#prevGod").addEventListener("click", () => {
+        markUserAction();
+        selectGodByOffset(-1);
+      });
+      $("#nextGod").addEventListener("click", () => {
+        markUserAction();
+        selectGodByOffset(1);
+      });
 
       let startX = 0;
       let startY = 0;
       const carousel = $("#godCarousel");
       carousel.addEventListener("touchstart", event => {
+        markUserAction();
         startX = event.touches[0].clientX;
         startY = event.touches[0].clientY;
       }, { passive: true });
@@ -1550,6 +1562,7 @@
         const dx = touch.clientX - startX;
         const dy = touch.clientY - startY;
         if (Math.abs(dx) > 48 && Math.abs(dx) > Math.abs(dy)) {
+          markUserAction();
           selectGodByOffset(dx < 0 ? 1 : -1);
         }
       }, { passive: true });
@@ -1571,9 +1584,12 @@
       godAutoTimer = window.setInterval(() => {
         const inputScreen = $("#inputScreen");
         const askButton = $("#askFortune");
+        const inactiveFor = Date.now() - lastUserActionAt;
         if (!inputScreen || inputScreen.hidden || askButton?.disabled) return;
+        if (inactiveFor < 4000) return;
+        lastUserActionAt = Date.now();
         selectGodByOffset(1);
-      }, 3000);
+      }, 1000);
     }
 
     function renderQuickOfferings() {
@@ -1587,14 +1603,20 @@
 
       $$(".quick-offering").forEach(button => {
         button.addEventListener("click", () => {
+          markUserAction();
           $("#concernInput").value = button.textContent.trim();
         });
       });
     }
 
     $("#birthDateInput").addEventListener("input", event => {
+      markUserAction();
       event.target.value = event.target.value.replace(/\D/g, "").slice(0, 6);
     });
+    $("#concernInput").addEventListener("input", markUserAction);
+    $("#concernInput").addEventListener("focus", markUserAction);
+    $("#birthDateInput").addEventListener("focus", markUserAction);
+    $("#inputScreen").addEventListener("pointerdown", markUserAction);
 
     function escapeHtml(value) {
       return String(value ?? "").replace(/[&<>"']/g, char => ({
