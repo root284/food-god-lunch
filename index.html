@@ -792,7 +792,14 @@
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 10px;
-      margin-top: 12px;
+      margin-top: 10px;
+      padding: 10px 0 0;
+      position: sticky;
+      bottom: 0;
+      z-index: 4;
+      background:
+        linear-gradient(180deg, rgba(24, 19, 17, 0), rgba(24, 19, 17, 0.96) 34%, rgba(24, 19, 17, 0.98));
+      border-top: 1px solid rgba(255, 247, 232, 0.1);
     }
 
     .primary, .secondary, .ghost {
@@ -1778,7 +1785,7 @@
         <div class="actions">
           <button class="ghost" type="button" id="backToInput">다시 고르기</button>
           <button class="primary" type="button" id="shareFortune">공유하기</button>
-          <button class="secondary" type="button" id="findFortuneRestaurant">지도에서 식당 보기</button>
+          <button class="secondary" type="button" id="findFortuneRestaurant">식당 추천</button>
         </div>
       `;
       $("#backToInput").addEventListener("click", showInputScreen);
@@ -1800,10 +1807,12 @@
         const imageBlob = await createShareCardImage(data, god);
         const imageFile = new File([imageBlob], "food-god-lunch.png", { type: "image/png" });
 
-        if (navigator.share && navigator.canShare?.({ files: [imageFile] })) {
+        const isTouchShareDevice = window.matchMedia?.("(pointer: coarse)").matches
+          || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+        if (isTouchShareDevice && navigator.share && navigator.canShare?.({ files: [imageFile] })) {
           await navigator.share({
             title: "음식의 신 점심 판결",
-            text: `${god.name}이 고른 오늘의 메뉴는 ${data.menu}`,
             files: [imageFile]
           });
           return;
@@ -1858,11 +1867,13 @@
       ctx.fill();
     }
 
-    function drawCoverImage(ctx, image, size) {
+    function drawCoverImage(ctx, image, size, positionY = 0.1) {
       const ratio = Math.max(size / image.naturalWidth, size / image.naturalHeight);
       const width = image.naturalWidth * ratio;
       const height = image.naturalHeight * ratio;
-      ctx.drawImage(image, (size - width) / 2, (size - height) / 2, width, height);
+      const x = (size - width) / 2;
+      const y = (size - height) * positionY;
+      ctx.drawImage(image, x, y, width, height);
     }
 
     function wrapCanvasText(ctx, text, maxWidth, maxLines) {
@@ -1906,7 +1917,7 @@
       canvas.height = size;
       const ctx = canvas.getContext("2d");
       const image = await loadCanvasImage(god.image);
-      drawCoverImage(ctx, image, size);
+      drawCoverImage(ctx, image, size, 0.1);
 
       let gradient = ctx.createLinearGradient(0, 0, 0, size);
       gradient.addColorStop(0, "rgba(9, 8, 10, 0.08)");
@@ -1921,15 +1932,6 @@
       gradient.addColorStop(1, "rgba(9, 8, 10, 0.2)");
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, size, size);
-
-      ctx.strokeStyle = "rgba(255, 247, 232, 0.12)";
-      ctx.lineWidth = 2;
-      for (let x = -size; x < size * 2; x += 86) {
-        ctx.beginPath();
-        ctx.moveTo(x, size);
-        ctx.lineTo(x + size, 0);
-        ctx.stroke();
-      }
 
       ctx.fillStyle = "rgba(255, 247, 232, 0.16)";
       fillRoundRect(ctx, 48, 48, 430, 58, 29);
