@@ -102,15 +102,18 @@
     .hero {
       min-height: calc(100vh - 116px);
       display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(340px, 420px);
-      gap: 48px;
-      align-items: end;
-      padding: 42px 0 22px;
+      grid-template-columns: minmax(0, 430px);
+      justify-content: center;
+      justify-items: stretch;
+      gap: 18px;
+      align-items: start;
+      padding: 28px 0 22px;
     }
 
     .copy {
-      max-width: 690px;
-      padding-bottom: 42px;
+      max-width: 430px;
+      padding: 4px 4px 0;
+      text-align: center;
       text-shadow: 0 2px 26px rgba(0, 0, 0, 0.62);
     }
 
@@ -129,13 +132,14 @@
     }
 
     h1 {
-      font-size: clamp(36px, 5.8vw, 68px);
-      line-height: 1.05;
+      font-size: clamp(30px, 4.2vw, 42px);
+      line-height: 1.12;
       margin: 0;
       letter-spacing: 0;
     }
 
     .lead {
+      display: none;
       margin: 20px 0 0;
       font-size: clamp(17px, 2.2vw, 22px);
       line-height: 1.58;
@@ -159,6 +163,8 @@
       overflow-y: auto;
       scrollbar-width: thin;
       scrollbar-color: rgba(229, 180, 93, 0.45) transparent;
+      width: min(100%, 430px);
+      justify-self: center;
     }
 
     .panel-body {
@@ -578,7 +584,8 @@
     }
 
     .result-hero {
-      min-height: 390px;
+      aspect-ratio: 1 / 1;
+      min-height: auto;
       border: 1px solid rgba(255, 247, 232, 0.18);
       border-radius: var(--radius);
       position: relative;
@@ -732,12 +739,12 @@
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 8px;
-      margin-top: 14px;
+      margin-top: 12px;
     }
 
     .result-stat {
-      min-height: 74px;
-      padding: 10px;
+      min-height: 66px;
+      padding: 9px;
       border-radius: var(--radius);
       background: rgba(9, 8, 10, 0.26);
       border: 1px solid rgba(255, 247, 232, 0.13);
@@ -754,7 +761,7 @@
 
     .result-stat b {
       color: #fff7e8;
-      font-size: 16px;
+      font-size: 15px;
       line-height: 1.2;
       overflow-wrap: anywhere;
     }
@@ -1026,14 +1033,13 @@
       }
 
       .hero {
-        grid-template-columns: 1fr;
-        align-items: start;
+        grid-template-columns: minmax(0, 430px);
         min-height: auto;
         padding-top: 28px;
       }
 
       .copy {
-        padding: 28px 0 10px;
+        padding: 10px 4px 0;
       }
 
       .app-panel {
@@ -1119,7 +1125,6 @@
       }
 
       .result-hero {
-        min-height: 340px;
         background-position: center 8%;
       }
 
@@ -1162,7 +1167,7 @@
         font-size: 28px;
       }
 
-      .actions, .distance-grid, .settings-actions {
+      .distance-grid, .settings-actions {
         grid-template-columns: 1fr;
       }
     }
@@ -1750,9 +1755,9 @@
               <span class="result-confidence"><b>${escapeHtml(data.confidence || "88%")}</b>적중감</span>
             </div>
             <div class="result-menu-plate">
-              <p>${escapeHtml(god.title)} · ${escapeHtml(data.fortuneWeather || "맑음 뒤 감칠맛")}</p>
+              <p>당신의 점심메뉴는</p>
               <h2>${escapeHtml(data.menu)}</h2>
-              <div class="result-oracle-line">${escapeHtml(elementReading ? elementReading.summary : data.cautionTag || "아무거나 금지")}</div>
+              <div class="result-oracle-line">${escapeHtml(data.fortuneWeather || "맑음 뒤 감칠맛")} · ${escapeHtml(data.cautionTag || "아무거나 금지")}</div>
             </div>
           </div>
         </section>
@@ -1769,13 +1774,6 @@
             <div class="result-stat"><span>행운색</span><b>${escapeHtml(data.luckyColor || "노랑")}</b></div>
             <div class="result-stat"><span>곁들임</span><b>${escapeHtml(data.side || "따뜻한 차")}</b></div>
           </div>
-          <div class="chips">
-            <span class="chip">조심 ${escapeHtml(data.cautionTag || "아무거나 금지")}</span>
-            <span class="chip">운세 날씨 ${escapeHtml(data.fortuneWeather || "맑음 뒤 감칠맛")}</span>
-            ${elementReading ? `<span class="chip saju-chip">사주맛 ${escapeHtml(elementReading.summary)}</span>` : ""}
-            ${birthInfo && !elementReading ? `<span class="chip saju-chip">사주맛 ${escapeHtml(birthInfo)}</span>` : ""}
-            <span class="chip">${todayKorean()}</span>
-          </div>
         </article>
         <div class="actions">
           <button class="ghost" type="button" id="backToInput">다시 고르기</button>
@@ -1789,6 +1787,7 @@
     }
 
     async function shareFortune(data, god, elementReading) {
+      const button = $("#shareFortune");
       const shareText = [
         `${god.emoji} ${god.name}의 점심 판결`,
         `오늘의 메뉴: ${data.menu}`,
@@ -1798,28 +1797,185 @@
       ].filter(Boolean).join("\n");
 
       try {
-        if (navigator.share) {
+        const imageBlob = await createShareCardImage(data, god);
+        const imageFile = new File([imageBlob], "food-god-lunch.png", { type: "image/png" });
+
+        if (navigator.share && navigator.canShare?.({ files: [imageFile] })) {
           await navigator.share({
             title: "음식의 신 점심 판결",
-            text: shareText
+            text: `${god.name}이 고른 오늘의 메뉴는 ${data.menu}`,
+            files: [imageFile]
           });
           return;
         }
 
+        if (navigator.clipboard && window.ClipboardItem) {
+          await navigator.clipboard.write([
+            new ClipboardItem({ "image/png": imageBlob })
+          ]);
+          button.textContent = "이미지 복사";
+          window.setTimeout(() => {
+            button.textContent = "공유하기";
+          }, 1400);
+          return;
+        }
+
         await navigator.clipboard.writeText(shareText);
-        const button = $("#shareFortune");
-        button.textContent = "복사 완료";
+        button.textContent = "텍스트 복사";
         window.setTimeout(() => {
           button.textContent = "공유하기";
         }, 1400);
       } catch (error) {
         if (error?.name === "AbortError") return;
-        const button = $("#shareFortune");
         button.textContent = "공유 실패";
         window.setTimeout(() => {
           button.textContent = "공유하기";
         }, 1400);
       }
+    }
+
+    function loadCanvasImage(src) {
+      return new Promise((resolve, reject) => {
+        const image = new Image();
+        image.onload = () => resolve(image);
+        image.onerror = reject;
+        image.src = src;
+      });
+    }
+
+    function fillRoundRect(ctx, x, y, width, height, radius) {
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.lineTo(x + width - radius, y);
+      ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+      ctx.lineTo(x + width, y + height - radius);
+      ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+      ctx.lineTo(x + radius, y + height);
+      ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    function drawCoverImage(ctx, image, size) {
+      const ratio = Math.max(size / image.naturalWidth, size / image.naturalHeight);
+      const width = image.naturalWidth * ratio;
+      const height = image.naturalHeight * ratio;
+      ctx.drawImage(image, (size - width) / 2, (size - height) / 2, width, height);
+    }
+
+    function wrapCanvasText(ctx, text, maxWidth, maxLines) {
+      const words = String(text || "").split(/\s+/);
+      const lines = [];
+      let line = "";
+      words.forEach(word => {
+        if (ctx.measureText(word).width > maxWidth) {
+          [...word].forEach(char => {
+            const testChar = line ? `${line}${char}` : char;
+            if (ctx.measureText(testChar).width <= maxWidth || !line) {
+              line = testChar;
+              return;
+            }
+            lines.push(line);
+            line = char;
+          });
+          return;
+        }
+        const test = line ? `${line} ${word}` : word;
+        if (ctx.measureText(test).width <= maxWidth || !line) {
+          line = test;
+          return;
+        }
+        lines.push(line);
+        line = word;
+      });
+      if (line) lines.push(line);
+      return lines.slice(0, maxLines);
+    }
+
+    function canvasBlob(canvas) {
+      return new Promise(resolve => canvas.toBlob(resolve, "image/png", 0.94));
+    }
+
+    async function createShareCardImage(data, god) {
+      await document.fonts?.ready;
+      const size = 1080;
+      const canvas = document.createElement("canvas");
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext("2d");
+      const image = await loadCanvasImage(god.image);
+      drawCoverImage(ctx, image, size);
+
+      let gradient = ctx.createLinearGradient(0, 0, 0, size);
+      gradient.addColorStop(0, "rgba(9, 8, 10, 0.08)");
+      gradient.addColorStop(0.44, "rgba(9, 8, 10, 0.34)");
+      gradient.addColorStop(1, "rgba(9, 8, 10, 0.92)");
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, size, size);
+
+      gradient = ctx.createLinearGradient(0, 0, size, 0);
+      gradient.addColorStop(0, "rgba(9, 8, 10, 0.52)");
+      gradient.addColorStop(0.42, "rgba(9, 8, 10, 0)");
+      gradient.addColorStop(1, "rgba(9, 8, 10, 0.2)");
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, size, size);
+
+      ctx.strokeStyle = "rgba(255, 247, 232, 0.12)";
+      ctx.lineWidth = 2;
+      for (let x = -size; x < size * 2; x += 86) {
+        ctx.beginPath();
+        ctx.moveTo(x, size);
+        ctx.lineTo(x + size, 0);
+        ctx.stroke();
+      }
+
+      ctx.fillStyle = "rgba(255, 247, 232, 0.16)";
+      fillRoundRect(ctx, 48, 48, 430, 58, 29);
+      ctx.fillStyle = "#f2d49a";
+      ctx.font = "900 28px 'Apple SD Gothic Neo', 'Noto Sans KR', system-ui, sans-serif";
+      ctx.fillText(`${god.emoji} ${god.name}의 점심 판결`, 74, 87);
+
+      ctx.fillStyle = "rgba(9, 8, 10, 0.48)";
+      ctx.beginPath();
+      ctx.arc(958, 92, 58, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(242, 212, 154, 0.5)";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.fillStyle = "#f2d49a";
+      ctx.font = "900 32px 'Apple SD Gothic Neo', 'Noto Sans KR', system-ui, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(data.confidence || "88%", 958, 91);
+      ctx.fillStyle = "#fff7e8";
+      ctx.font = "900 18px 'Apple SD Gothic Neo', 'Noto Sans KR', system-ui, sans-serif";
+      ctx.fillText("적중감", 958, 116);
+      ctx.textAlign = "left";
+
+      ctx.fillStyle = "rgba(255, 247, 232, 0.82)";
+      ctx.font = "900 32px 'Apple SD Gothic Neo', 'Noto Sans KR', system-ui, sans-serif";
+      ctx.fillText("당신의 점심메뉴는", 58, 712);
+
+      ctx.fillStyle = "#fff7e8";
+      ctx.font = "900 78px 'Apple SD Gothic Neo', 'Noto Sans KR', system-ui, sans-serif";
+      const menuLines = wrapCanvasText(ctx, data.menu, 900, 2);
+      menuLines.forEach((line, index) => {
+        ctx.fillText(line, 58, 798 + index * 86);
+      });
+
+      const lineY = menuLines.length > 1 ? 916 : 846;
+      ctx.fillStyle = "rgba(9, 8, 10, 0.52)";
+      fillRoundRect(ctx, 58, lineY, 850, 58, 8);
+      ctx.fillStyle = "#fff7e8";
+      ctx.font = "850 27px 'Apple SD Gothic Neo', 'Noto Sans KR', system-ui, sans-serif";
+      ctx.fillText(`${data.fortuneWeather || "맑음 뒤 감칠맛"} · ${data.cautionTag || "아무거나 금지"}`, 82, lineY + 39);
+
+      ctx.fillStyle = "rgba(255, 247, 232, 0.7)";
+      ctx.font = "900 22px 'Apple SD Gothic Neo', 'Noto Sans KR', system-ui, sans-serif";
+      ctx.fillText("운명의 점심메뉴", 58, 1014);
+
+      return canvasBlob(canvas);
     }
 
     async function askFortune() {
