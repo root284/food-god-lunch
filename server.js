@@ -24,6 +24,15 @@ function sendJson(res, status, body) {
   res.end(JSON.stringify(body));
 }
 
+function shuffle(items) {
+  const shuffled = [...items];
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const target = Math.floor(Math.random() * (index + 1));
+    [shuffled[index], shuffled[target]] = [shuffled[target], shuffled[index]];
+  }
+  return shuffled;
+}
+
 function localFallback(payload) {
   const god = payload.god || {};
   const menuCandidates = Array.isArray(payload.menuCandidates) && payload.menuCandidates.length
@@ -40,11 +49,14 @@ function localFallback(payload) {
   const concern = payload.concern && payload.concern !== "특별한 고민 없음"
     ? `네가 털어놓은 고민은 "${payload.concern}"이다. `
     : "";
+  const birthFlavor = payload.birthInfo && payload.birthInfo !== "입력 안 함"
+    ? `사주맛으로는 ${payload.birthInfo}의 기운이 오늘 든든한 한 그릇 쪽으로 살짝 기운다. `
+    : "";
 
   return {
     theme: `${god.emoji || "🔮"} ${god.name || "음식의 신"} · 로컬 점심 판결`,
     menu,
-    fortune: `${god.name || "음식의 신"}은 오늘 점심 이후 운이 조금씩 풀린다고 본다. ${concern}${menu}은 지금의 기운을 가장 덜 낭비하는 선택이다. 조심할 것은 애매한 메뉴와 애매한 대답이다. 맛있는 한 입 뒤에 작은 행운이 조용히 붙어 온다.`,
+    fortune: `${god.name || "음식의 신"}은 오늘 점심 이후 운이 조금씩 풀린다고 본다. ${concern}${birthFlavor}${menu}은 지금의 기운을 가장 덜 낭비하는 선택이다. 조심할 것은 애매한 메뉴와 애매한 대답이다. 맛있는 한 입 뒤에 작은 행운이 조용히 붙어 온다.`,
     luckyColor,
     side,
     direction,
@@ -74,19 +86,26 @@ async function handleFortune(req, res) {
 
   const god = payload.god || {};
   const concern = payload.concern || "특별한 고민 없음";
-  const menuCandidates = Array.isArray(payload.menuCandidates) ? payload.menuCandidates : [];
+  const birthInfo = payload.birthInfo || "입력 안 함";
+  const menuCandidates = shuffle(Array.isArray(payload.menuCandidates) ? payload.menuCandidates : []);
+  const omenSeed = payload.omenSeed || Math.random().toString(36).slice(2, 10);
   const prompt = [
     "너는 한국 직장인의 점심 메뉴 고민을 해결해주는 '음식의 신'이다.",
     "선택된 신의 캐릭터와 사용자가 털어놓은 고민을 섞어서 재미있지만 실제로 도움이 되는 점심 추천을 만든다.",
+    "생년월일시가 있으면 정통 사주 풀이처럼 단정하지 말고, '사주맛' 정도의 가벼운 오행/기운 농담으로만 반영한다.",
     "톤은 쓸데없이 장엄하고 간지나지만, 추천 내용은 현실적이어야 한다.",
     "반드시 JSON만 반환한다. markdown 코드블록 금지.",
     "필드: theme, menu, fortune, luckyColor, side, direction, luckyTime, cautionTag, fortuneWeather, confidence.",
     "fortune은 한국어 4문장. 하루 일진, 점심 메뉴를 고른 이유, 오늘 조심할 것, 작은 예언을 각각 자연스럽게 포함한다.",
     "menu는 실제 점심 메뉴 1개. side는 곁들이면 좋은 것 1개. direction은 오늘의 방향, luckyTime은 HH:MM 형식, cautionTag는 짧은 주의 태그, fortuneWeather는 오늘 운세 날씨 같은 짧은 표현, confidence는 '88%' 형식.",
+    "매번 같은 안전한 기본 메뉴로 수렴하지 마라. 특히 비빔밥, 김치찌개, 제육볶음 같은 기본 메뉴는 정말 잘 맞을 때만 선택한다.",
+    "후보 목록의 앞쪽 메뉴를 우선 참고하되, 사용자의 고민과 신의 성향에 맞으면 후보 밖의 현실적인 한국 점심 메뉴도 허용한다.",
+    `오늘의 무작위 계시값: ${omenSeed}`,
     `오늘 날짜: ${payload.today || "오늘"}`,
     `선택된 신: ${god.name || "음식의 신"} (${god.title || "점심 관리자"}, ${god.mood || "오늘"})`,
     `신의 말투 참고: ${(god.voices || []).join(" ")}`,
     `사용자가 털어놓은 고민: ${concern}`,
+    `사주맛 참고 입력: ${birthInfo}`,
     `추천 메뉴 후보 참고: ${menuCandidates.slice(0, 80).join(", ")}`
   ].join("\n");
 

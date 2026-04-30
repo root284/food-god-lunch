@@ -203,27 +203,6 @@
       display: none;
     }
 
-    .picker-copy {
-      background: rgba(255, 247, 232, 0.08);
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      padding: 13px;
-      line-height: 1.48;
-    }
-
-    .picker-copy b {
-      display: block;
-      font-size: 18px;
-      margin-bottom: 4px;
-      letter-spacing: 0;
-    }
-
-    .picker-copy span {
-      color: var(--muted);
-      font-size: 14px;
-      font-weight: 750;
-    }
-
     .god-carousel {
       border: 1px solid var(--line);
       border-radius: var(--radius);
@@ -233,6 +212,36 @@
       min-height: 374px;
       touch-action: pan-y;
     }
+
+    .swipe-hint {
+      position: absolute;
+      z-index: 2;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 11px;
+      border-radius: 999px;
+      background: rgba(9, 8, 10, 0.54);
+      border: 1px solid rgba(255, 247, 232, 0.18);
+      color: #fff7e8;
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
+    }
+
+    .swipe-hint::before,
+    .swipe-hint::after {
+      color: #f2d49a;
+      font-size: 15px;
+    }
+
+    .swipe-hint::before { content: "‹"; }
+    .swipe-hint::after { content: "›"; }
 
     .god-track {
       display: flex;
@@ -468,6 +477,78 @@
       color: #dfd1bf;
       font-size: 12px;
       font-weight: 850;
+    }
+
+    .saju-panel {
+      border: 1px solid rgba(255, 247, 232, 0.14);
+      border-radius: var(--radius);
+      background: rgba(255, 247, 232, 0.07);
+      overflow: hidden;
+    }
+
+    .saju-panel summary {
+      min-height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 0 12px;
+      cursor: pointer;
+      color: #f2d49a;
+      font-size: 13px;
+      font-weight: 950;
+      list-style: none;
+    }
+
+    .saju-panel summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .saju-panel summary::after {
+      content: "+";
+      width: 22px;
+      height: 22px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: rgba(255, 247, 232, 0.12);
+      color: #fff7e8;
+      font-size: 16px;
+      line-height: 1;
+    }
+
+    .saju-panel[open] summary::after {
+      content: "−";
+    }
+
+    .saju-fields {
+      display: grid;
+      grid-template-columns: 1fr 0.8fr;
+      gap: 8px;
+      padding: 0 12px 12px;
+    }
+
+    .saju-field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .saju-field label {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 850;
+    }
+
+    .saju-field input {
+      width: 100%;
+      min-height: 42px;
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      background: rgba(9, 8, 10, 0.34);
+      color: var(--ink);
+      padding: 9px 10px;
+      outline: none;
+      color-scheme: dark;
     }
 
     .orb-wrap {
@@ -894,13 +975,29 @@
         padding: 10px 0 0;
       }
 
+      .topbar {
+        min-height: 38px;
+      }
+
+      .brand-mark {
+        width: 32px;
+        height: 32px;
+      }
+
+      .eyebrow {
+        margin-bottom: 7px;
+        padding: 6px 9px;
+        font-size: 12px;
+      }
+
       h1 {
-        font-size: 42px;
+        font-size: clamp(32px, 9.4vw, 38px);
+        line-height: 1;
+        white-space: nowrap;
       }
 
       .lead {
-        margin-top: 12px;
-        font-size: 16px;
+        display: none;
       }
 
       .panel-body {
@@ -922,7 +1019,23 @@
 
       .god-carousel,
       .god-slide {
-        min-height: 348px;
+        min-height: 326px;
+      }
+
+      .god-caption {
+        padding: 16px;
+      }
+
+      .god-caption b {
+        font-size: 27px;
+      }
+
+      .offering textarea {
+        min-height: 62px;
+      }
+
+      .saju-fields {
+        grid-template-columns: 1fr;
       }
 
       .menu-name {
@@ -956,16 +1069,25 @@
           <section id="fortuneMode">
             <div class="fortune-stage" id="fortuneStage">
               <div class="screen" id="inputScreen">
-                <div class="picker-copy">
-                  <b>마음에 드는 신을 넘겨 골라보세요</b>
-                  <span>화나는 날, 피곤한 날, 금전운이 필요한 날, 횡재수가 왔으면 하는 날까지. 선택한 신이 오늘의 점심 메뉴를 대신 정해줍니다.</span>
-                </div>
                 <div class="god-carousel" id="godCarousel" aria-label="오늘의 음식신 선택"></div>
                 <div class="offering">
                   <label for="concernInput">고민 있으면 털어놔봐 <span style="color:var(--muted);font-weight:800;">선택사항</span></label>
                   <textarea id="concernInput" placeholder="예: 다이어트는 하고 싶은데 맛있는 건 먹고 싶어요. 상사가 개짜증나요. 시험 망했어요. 회식장소 구해요."></textarea>
                   <div class="quick-offerings" id="quickOfferings"></div>
                 </div>
+                <details class="saju-panel" id="sajuPanel">
+                  <summary>사주맛 살짝 추가하기 <span style="color:var(--muted);font-weight:800;">선택사항</span></summary>
+                  <div class="saju-fields">
+                    <div class="saju-field">
+                      <label for="birthDateInput">생년월일</label>
+                      <input id="birthDateInput" type="date" />
+                    </div>
+                    <div class="saju-field">
+                      <label for="birthTimeInput">태어난 시간</label>
+                      <input id="birthTimeInput" type="time" />
+                    </div>
+                  </div>
+                </details>
                 <button class="primary" type="button" id="askFortune">오늘 점심 골라줘</button>
               </div>
               <div class="screen" id="resultScreen" hidden>
@@ -1221,6 +1343,15 @@
       return [...new Set(items)];
     }
 
+    function shuffle(items) {
+      const shuffled = [...items];
+      for (let index = shuffled.length - 1; index > 0; index -= 1) {
+        const target = Math.floor(Math.random() * (index + 1));
+        [shuffled[index], shuffled[target]] = [shuffled[target], shuffled[index]];
+      }
+      return shuffled;
+    }
+
     function getPool(intentId = selectedIntent, categoryId = selectedCategory) {
       return menus[intentId]?.[categoryId]?.length
         ? menus[intentId][categoryId]
@@ -1245,9 +1376,19 @@
       }).format(new Date());
     }
 
+    function birthInfoText() {
+      const birthDate = $("#birthDateInput")?.value;
+      const birthTime = $("#birthTimeInput")?.value;
+      if (!birthDate && !birthTime) return "";
+      if (birthDate && birthTime) return `${birthDate} ${birthTime}`;
+      if (birthDate) return `${birthDate}, 태어난 시간 모름`;
+      return `생년월일 모름, 태어난 시간 ${birthTime}`;
+    }
+
     function localFortune() {
       const god = currentGod();
       const concern = $("#concernInput")?.value.trim();
+      const birthInfo = birthInfoText();
       const theme = sample(fortuneThemes);
       const pool = getGodMenuPool(god);
       const menu = sample(pool.length ? pool : allMenuNames);
@@ -1283,11 +1424,14 @@
         "오늘은 낯선 선택보다 먹고 난 뒤 후회가 적은 안정적인 한 끼가 유리합니다.",
         "작은 만족감이 큰 집중력으로 이어지는 날이라 첫 입의 임팩트가 중요합니다."
       ]);
+      const sajuFlavor = birthInfo
+        ? `사주맛으로 보면 ${birthInfo}의 기운은 오늘 ${sample(["불맛", "국물", "초록 재료", "바삭함", "따뜻한 밥"])} 쪽에 살짝 기운다.`
+        : "";
 
       return {
         theme: `${god.emoji} ${god.name} · ${theme.name}`,
         menu,
-        fortune: `${sample(god.voices)} ${dailyLuck} ${reason} ${caution} ${prophecy}`,
+        fortune: `${sample(god.voices)} ${dailyLuck} ${reason} ${sajuFlavor} ${caution} ${prophecy}`,
         luckyColor: lucky,
         side,
         direction,
@@ -1301,6 +1445,7 @@
     async function aiFortune() {
       const god = currentGod();
       const concern = $("#concernInput")?.value.trim() || "특별한 고민 없음";
+      const birthInfo = birthInfoText() || "입력 안 함";
       const response = await fetch("/api/fortune", {
         method: "POST",
         headers: {
@@ -1310,7 +1455,9 @@
           today: todayKorean(),
           god,
           concern,
-          menuCandidates: getGodMenuPool(god).slice(0, 80)
+          birthInfo,
+          omenSeed: Math.random().toString(36).slice(2, 10),
+          menuCandidates: shuffle(getGodMenuPool(god)).slice(0, 80)
         })
       });
 
@@ -1324,6 +1471,7 @@
     function renderFortuneResult(data, target = $("#fortuneResult")) {
       selectedMenu = data.menu;
       const god = currentGod();
+      const birthInfo = birthInfoText();
       target.innerHTML = `
         <section class="result-hero" style="--result-image: url('${god.image}')">
           <div class="result-hero-copy">
@@ -1345,6 +1493,7 @@
             <span class="chip">조심 ${escapeHtml(data.cautionTag || "아무거나 금지")}</span>
             <span class="chip">운세 날씨 ${escapeHtml(data.fortuneWeather || "맑음 뒤 감칠맛")}</span>
             <span class="chip">곁들임 ${escapeHtml(data.side || "따뜻한 차")}</span>
+            ${birthInfo ? `<span class="chip">사주맛 ${escapeHtml(birthInfo)}</span>` : ""}
             <span class="chip">${todayKorean()}</span>
           </div>
         </article>
@@ -1427,6 +1576,7 @@
         <div class="god-dots" aria-hidden="true">
           ${gods.map(god => `<span class="god-dot ${god.id === selectedGodId ? "active" : ""}"></span>`).join("")}
         </div>
+        <div class="swipe-hint">신을 넘겨 선택</div>
       `;
 
       $("#prevGod").addEventListener("click", () => selectGodByOffset(-1));
