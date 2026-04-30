@@ -985,6 +985,7 @@
       }
 
       .eyebrow {
+        display: none;
         margin-bottom: 7px;
         padding: 6px 9px;
         font-size: 12px;
@@ -1059,7 +1060,6 @@
 
     <main class="hero">
       <section class="copy" aria-labelledby="appTitle">
-        <div class="eyebrow">🔮 행운을 부르는</div>
         <h1 id="appTitle">운명의 점심메뉴</h1>
         <p class="lead">이미지를 넘겨 지금 기분에 끌리는 신을 고르세요. 당신의 점심 고민을 쓸데없이 진지하게 해결해줍니다.</p>
       </section>
@@ -1076,11 +1076,11 @@
                   <div class="quick-offerings" id="quickOfferings"></div>
                 </div>
                 <details class="saju-panel" id="sajuPanel">
-                  <summary>사주맛 살짝 추가하기 <span style="color:var(--muted);font-weight:800;">선택사항</span></summary>
+                  <summary>사주기반 검색하기 <span style="color:var(--muted);font-weight:800;">선택사항</span></summary>
                   <div class="saju-fields">
                     <div class="saju-field">
                       <label for="birthDateInput">생년월일</label>
-                      <input id="birthDateInput" type="date" />
+                      <input id="birthDateInput" type="text" inputmode="numeric" placeholder="예: 1990-08-15" autocomplete="bday" />
                     </div>
                     <div class="saju-field">
                       <label for="birthTimeInput">태어난 시간</label>
@@ -1377,8 +1377,12 @@
     }
 
     function birthInfoText() {
-      const birthDate = $("#birthDateInput")?.value;
+      const rawBirthDate = $("#birthDateInput")?.value.trim() || "";
       const birthTime = $("#birthTimeInput")?.value;
+      const digits = rawBirthDate.replace(/\D/g, "");
+      const birthDate = digits.length === 8
+        ? `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6, 8)}`
+        : rawBirthDate;
       if (!birthDate && !birthTime) return "";
       if (birthDate && birthTime) return `${birthDate} ${birthTime}`;
       if (birthDate) return `${birthDate}, 태어난 시간 모름`;
