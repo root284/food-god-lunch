@@ -783,7 +783,7 @@
 
     .actions {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 10px;
       margin-top: 12px;
     }
@@ -792,6 +792,8 @@
       min-height: 48px;
       border-radius: var(--radius);
       font-weight: 900;
+      line-height: 1.18;
+      padding: 9px 10px;
     }
 
     .primary {
@@ -1777,11 +1779,47 @@
         </article>
         <div class="actions">
           <button class="ghost" type="button" id="backToInput">다시 고르기</button>
+          <button class="primary" type="button" id="shareFortune">공유하기</button>
           <button class="secondary" type="button" id="findFortuneRestaurant">지도에서 식당 보기</button>
         </div>
       `;
       $("#backToInput").addEventListener("click", showInputScreen);
+      $("#shareFortune").addEventListener("click", () => shareFortune(data, god, elementReading));
       $("#findFortuneRestaurant").addEventListener("click", () => showRestaurantPicker($("#fortuneRestaurant"), selectedMenu));
+    }
+
+    async function shareFortune(data, god, elementReading) {
+      const shareText = [
+        `${god.emoji} ${god.name}의 점심 판결`,
+        `오늘의 메뉴: ${data.menu}`,
+        elementReading ? `사주맛: ${elementReading.summary}` : `운세 날씨: ${data.fortuneWeather || "맑음 뒤 감칠맛"}`,
+        `행운 시간: ${data.luckyTime || "12:26"} · 방향: ${data.direction || "창가"}`,
+        data.fortune
+      ].filter(Boolean).join("\n");
+
+      try {
+        if (navigator.share) {
+          await navigator.share({
+            title: "음식의 신 점심 판결",
+            text: shareText
+          });
+          return;
+        }
+
+        await navigator.clipboard.writeText(shareText);
+        const button = $("#shareFortune");
+        button.textContent = "복사 완료";
+        window.setTimeout(() => {
+          button.textContent = "공유하기";
+        }, 1400);
+      } catch (error) {
+        if (error?.name === "AbortError") return;
+        const button = $("#shareFortune");
+        button.textContent = "공유 실패";
+        window.setTimeout(() => {
+          button.textContent = "공유하기";
+        }, 1400);
+      }
     }
 
     async function askFortune() {
