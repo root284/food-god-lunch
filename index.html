@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>음식의 신 | 오늘의 운세 점심 추천</title>
   <meta name="description" content="오늘의 운세와 기분을 섞어 점심 메뉴를 추천하는 웹앱" />
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
   <style>
     :root {
       color-scheme: dark;
@@ -1049,7 +1050,7 @@
               <div class="screen" id="inputScreen">
                 <div class="god-carousel" id="godCarousel" aria-label="오늘의 음식신 선택"></div>
                 <div class="offering">
-                  <label for="concernInput">고민 있으면 털어놔봐 <span style="color:var(--muted);font-weight:800;">선택사항</span></label>
+                  <label for="concernInput">고민 있으면 털어놔봐 <span style="color:var(--muted);font-weight:800;margin-left:6px;">(선택)</span></label>
                   <textarea id="concernInput" placeholder="예: 다이어트는 하고 싶은데 맛있는 건 먹고 싶어요. 상사가 개짜증나요. 시험 망했어요. 회식장소 구해요."></textarea>
                   <div class="quick-offerings" id="quickOfferings"></div>
                 </div>
@@ -1394,7 +1395,7 @@
     let selectedIntent = "stress";
     let selectedCategory = "korean";
     let selectedMenu = "";
-    let selectedGodId = "money";
+    let selectedGodId = gods[Math.floor(Math.random() * gods.length)].id;
     let isGodLocked = false;
     let godAutoTimer = null;
     let lastUserActionAt = Date.now();
@@ -1703,7 +1704,7 @@
         </div>
         <label class="god-lock">
           <input id="lockGod" type="checkbox" ${isGodLocked ? "checked" : ""} />
-          선택 고정
+          선택
         </label>
         <button class="carousel-button prev" type="button" id="prevGod" aria-label="이전 신">‹</button>
         <button class="carousel-button next" type="button" id="nextGod" aria-label="다음 신">›</button>
