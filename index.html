@@ -1056,7 +1056,7 @@
                   <div class="saju-fields">
                     <div class="saju-field">
                       <label for="birthDateInput">생년월일</label>
-                      <input id="birthDateInput" type="text" inputmode="numeric" placeholder="예: 1990-08-15" autocomplete="bday" />
+                      <input id="birthDateInput" type="text" inputmode="numeric" maxlength="6" placeholder="예: 900815" autocomplete="bday" />
                     </div>
                     <div class="saju-field">
                       <label for="birthTimeInput">태어난 시간</label>
@@ -1356,9 +1356,7 @@
       const rawBirthDate = $("#birthDateInput")?.value.trim() || "";
       const birthTime = $("#birthTimeInput")?.value;
       const digits = rawBirthDate.replace(/\D/g, "");
-      const birthDate = digits.length === 8
-        ? `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6, 8)}`
-        : rawBirthDate;
+      const birthDate = digits.length >= 6 ? digits.slice(0, 6) : digits;
       if (!birthDate && !birthTime) return "";
       if (birthDate && birthTime) return `${birthDate} ${birthTime}`;
       if (birthDate) return `${birthDate}, 태어난 시간 모름`;
@@ -1605,6 +1603,10 @@
         });
       });
     }
+
+    $("#birthDateInput").addEventListener("input", event => {
+      event.target.value = event.target.value.replace(/\D/g, "").slice(0, 6);
+    });
 
     function escapeHtml(value) {
       return String(value ?? "").replace(/[&<>"']/g, char => ({
